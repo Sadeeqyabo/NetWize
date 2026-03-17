@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NetWize — App Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --obsidian: #0D0D0B;
+  --surface: #161614;
+  --surface2: #1E1E1C;
+  --surface3: #252522;
+  --gold: #C9A84C;
+  --gold-light: #E8CC88;
+  --gold-dim: rgba(201,168,76,0.1);
+  --gold-border: rgba(201,168,76,0.22);
+  --ivory: #F2EDE4;
+  --muted: #6B6860;
+  --hint: #383634;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --green: #3ECF8E;
+  --red: #F87171;
+  --blue: #60A5FA;
+}
+
+html, body { background: #111; height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; }
+
+.outer {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
+  background: #0a0a0a;
+}
+
+.phone {
+  width: 393px; height: 852px;
+  background: var(--obsidian);
+  border-radius: 52px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  box-shadow: 0 0 0 8px #0e0e0e, 0 40px 100px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.07);
+  display: flex; flex-direction: column;
+  overflow: hidden; position: relative; flex-shrink: 0;
+}
+
+.statusbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 4px;
+  font-size: 12px; font-weight: 500; color: var(--ivory);
+  flex-shrink: 0; position: relative; z-index: 10;
+}
+.notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 36px;
+  background: #000; border-radius: 0 0 22px 22px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.notch-cam { width: 12px; height: 12px; background: #1a1a1a; border-radius: 50%; border: 2px solid #252525; }
+.notch-pill { width: 6px; height: 6px; background: #1a2a1a; border-radius: 50%; }
+.sb-icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+
+.screens { flex: 1; overflow: hidden; position: relative; }
+.screen {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  display: none; flex-direction: column;
+}
+.screen.active { display: flex; }
+.screen::-webkit-scrollbar { display: none; }
+
+.nav {
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 10px 0 28px;
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  flex-shrink: 0; z-index: 10;
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; flex: 1; transition: all 0.2s;
+}
+.nav-pip {
+  width: 46px; height: 28px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s;
+}
+.nav-item.active .nav-pip { background: var(--gold-dim); }
+.nav-item svg { width: 19px; height: 19px; stroke: var(--muted); fill: none; stroke-width: 1.5; transition: stroke 0.2s; }
+.nav-item.active svg { stroke: var(--gold); }
+.nav-lbl { font-size: 10px; color: var(--muted); transition: color 0.2s; }
+.nav-item.active .nav-lbl { color: var(--gold); font-weight: 500; }
+
+/* SHARED */
+.pad { padding: 0 20px; }
+.sec-label { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--hint); font-weight: 500; margin: 20px 0 10px; }
+.card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+.row { display: flex; align-items: center; justify-content: space-between; }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.bottom-pad { height: 24px; flex-shrink: 0; }
+
+/* OVERVIEW */
+.hero-band { padding: 14px 20px 0; background: linear-gradient(180deg, #131310 0%, transparent 100%); }
+.hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.hero-greeting { font-size: 12px; color: var(--muted); }
+.hero-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; color: var(--ivory); margin-top: 2px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #1e1608, #382c10); border: 1.5px solid var(--gold-border); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 14px; color: var(--gold); }
+
+.nw-card { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 22px; padding: 22px 20px; position: relative; overflow: hidden; margin-bottom: 4px; }
+.nw-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 65%); pointer-events: none; }
+.nw-label { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-bottom: 8px; }
+.nw-val { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 400; color: var(--ivory); line-height: 1; letter-spacing: -1px; }
+.nw-val span { color: var(--gold); }
+.nw-sub { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.nw-tag { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 500; }
+.nw-tag.up { background: rgba(62,207,142,0.12); color: var(--green); }
+
+.qs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.qs { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px; }
+.qs-l { font-size: 10px; color: var(--hint); margin-bottom: 6px; }
+.qs-v { font-size: 18px; font-weight: 500; color: var(--ivory); font-family: 'DM Mono', monospace; }
+.qs-c { font-size: 10px; margin-top: 4px; }
+
+.alloc-bar { display: flex; height: 6px; border-radius: 8px; overflow: hidden; gap: 2px; margin: 10px 0 12px; }
+.alloc-seg { height: 100%; }
+.alloc-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.alloc-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
+.alloc-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.alloc-pct { margin-left: auto; color: var(--ivory); font-weight: 500; font-size: 11px; }
+
+/* ACCOUNTS */
+.acc-hero { padding: 16px 20px 12px; }
+.acc-total-l { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--hint); margin-bottom: 6px; }
+.acc-total-v { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 400; color: var(--ivory); }
+.acc-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 0.5px solid var(--border); }
+.acc-row:last-child { border-bottom: none; }
+.acc-ico { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.acc-name { font-size: 13px; font-weight: 500; color: var(--ivory); }
+.acc-type { font-size: 10px; color: var(--hint); margin-top: 2px; }
+.acc-amt { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--ivory); text-align: right; }
+.acc-chg { font-size: 10px; text-align: right; margin-top: 2px; }
+.fx-card { background: linear-gradient(135deg, #0d1520, #0d1a28); border: 0.5px solid rgba(96,165,250,0.2); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+.fx-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.fx-pair { font-size: 10px; color: var(--hint); margin-bottom: 3px; }
+.fx-rate { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--ivory); }
+.fx-chg { font-size: 10px; margin-top: 2px; }
+
+/* ASSETS */
+.prop-card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+.prop-tag { font-size: 9px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
+.prop-name { font-size: 14px; font-weight: 500; color: var(--ivory); margin-bottom: 3px; }
+.prop-loc { font-size: 11px; color: var(--hint); margin-bottom: 12px; }
+.prop-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ps-l { font-size: 10px; color: var(--hint); }
+.ps-v { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--ivory); margin-top: 2px; }
+.eq-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 0.5px solid var(--border); }
+.eq-row:last-child { border-bottom: none; }
+.eq-ticker { font-size: 12px; font-weight: 600; color: var(--ivory); font-family: 'DM Mono', monospace; }
+.eq-name { font-size: 10px; color: var(--hint); margin-top: 2px; }
+.eq-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--ivory); text-align: right; }
+.eq-chg { font-size: 10px; text-align: right; margin-top: 2px; }
+
+/* ── AI INSIGHTS SCREEN ── */
+.ai-box { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+.ai-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.ai-title { font-size: 12px; font-weight: 500; color: var(--gold); }
+
+/* AI Chat Interface */
+.ai-chat-area {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 12px; max-height: 280px;
+  overflow-y: auto; padding-right: 4px;
+}
+.ai-chat-area::-webkit-scrollbar { display: none; }
+
+.ai-msg-user {
+  background: var(--gold-dim); border: 0.5px solid var(--gold-border);
+  border-radius: 12px 12px 4px 12px;
+  padding: 10px 13px; font-size: 12px; color: var(--ivory);
+  align-self: flex-end; max-width: 85%; line-height: 1.5;
+}
+.ai-msg-bot {
+  background: var(--surface3); border: 0.5px solid var(--border2);
+  border-radius: 4px 12px 12px 12px;
+  padding: 10px 13px; font-size: 12px; color: var(--muted);
+  align-self: flex-start; max-width: 95%; line-height: 1.65;
+}
+.ai-msg-bot strong { color: var(--ivory); font-weight: 500; }
+.ai-msg-bot .gold { color: var(--gold); font-weight: 500; }
+
+.ai-typing {
+  display: flex; align-items: center; gap: 5px;
+  padding: 10px 13px;
+  background: var(--surface3); border: 0.5px solid var(--border2);
+  border-radius: 4px 12px 12px 12px;
+  align-self: flex-start;
+}
+.ai-typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted); animation: bounce 1.2s infinite;
+}
+.ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+.ai-welcome { font-size: 12px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+
+.ai-btns { display: flex; flex-direction: column; gap: 6px; }
+.ai-btn {
+  background: var(--surface3); border: 0.5px solid var(--border2);
+  border-radius: 10px; padding: 10px 13px;
+  font-size: 12px; color: var(--ivory); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.2s; text-align: left;
+}
+.ai-btn:hover, .ai-btn:active { border-color: var(--gold-border); background: var(--gold-dim); }
+.ai-btn span { color: var(--hint); font-size: 13px; flex-shrink: 0; margin-left: 8px; }
+.ai-btn.loading { opacity: 0.6; pointer-events: none; }
+
+.ai-custom-input {
+  display: flex; gap: 8px; margin-top: 10px;
+}
+.ai-custom-input input {
+  flex: 1; background: var(--surface3); border: 0.5px solid var(--border2);
+  border-radius: 10px; padding: 10px 13px;
+  font-size: 12px; color: var(--ivory);
+  font-family: 'DM Sans', sans-serif; outline: none;
+  transition: border-color 0.2s;
+}
+.ai-custom-input input::placeholder { color: var(--hint); }
+.ai-custom-input input:focus { border-color: var(--gold-border); }
+.ai-custom-input button {
+  background: var(--gold); border: none; border-radius: 10px;
+  width: 38px; height: 38px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s;
+}
+.ai-custom-input button:hover { background: var(--gold-light); }
+.ai-custom-input button svg { width: 16px; height: 16px; }
+
+.insight-card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+.insight-ico { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 10px; }
+.insight-title { font-size: 13px; font-weight: 500; color: var(--ivory); margin-bottom: 5px; }
+.insight-body { font-size: 12px; color: var(--muted); line-height: 1.65; }
+.insight-action { margin-top: 10px; font-size: 11px; color: var(--gold); font-weight: 500; cursor: pointer; }
+
+/* PROFILE */
+.profile-hero { display: flex; flex-direction: column; align-items: center; padding: 24px 20px 16px; }
+.profile-avatar { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #1e1608, #382c10); border: 2px solid var(--gold-border); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 26px; color: var(--gold); margin-bottom: 10px; }
+.profile-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; color: var(--ivory); }
+.profile-tier { font-size: 11px; color: var(--gold); margin-top: 4px; }
+.sub-card { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 10px; }
+.sub-label { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--hint); margin-bottom: 6px; }
+.sub-val { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--gold); line-height: 1; }
+.sub-note { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 0.5px solid var(--border); }
+.settings-row:last-child { border-bottom: none; }
+.settings-lbl { font-size: 13px; color: var(--ivory); }
+.settings-val { font-size: 12px; color: var(--hint); display: flex; align-items: center; gap: 6px; }
+.toggle { width: 38px; height: 21px; background: var(--green); border-radius: 11px; position: relative; cursor: pointer; flex-shrink: 0; }
+.toggle::after { content: ''; position: absolute; top: 2.5px; right: 2.5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; }
+.toggle.off { background: var(--surface3); }
+.toggle.off::after { right: auto; left: 2.5px; }
+
+.screen.active > * { animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+@media (max-width: 430px) {
+  .outer { padding: 0; background: var(--obsidian); align-items: flex-start; }
+  .phone { width: 100%; height: 100vh; height: 100dvh; border-radius: 0; border: none; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="outer">
+<div class="phone">
+
+  <div class="statusbar">
+    <div class="notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+    <span style="padding-left:6px;font-size:12px">9:41</span>
+    <div class="sb-icons">
+      <svg width="15" height="11" viewBox="0 0 16 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="#F2EDE4"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="#F2EDE4"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="#F2EDE4"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" fill="#F2EDE4" opacity="0.3"/></svg>
+      <svg width="15" height="11" viewBox="0 0 22 16" fill="none"><path d="M11 4C13.5 4 15.8 5 17.4 6.7L19 5C17 3.1 14.1 2 11 2C7.9 2 5 3.1 3 5L4.6 6.7C6.2 5 8.5 4 11 4Z" fill="#F2EDE4"/><path d="M11 8C12.6 8 14 8.7 14.9 9.8L16.5 8.1C15.2 6.8 13.2 6 11 6C8.8 6 6.8 6.8 5.5 8.1L7.1 9.8C8 8.7 9.4 8 11 8Z" fill="#F2EDE4"/><circle cx="11" cy="13" r="2" fill="#F2EDE4"/></svg>
+      <span style="font-size:11px;font-weight:500">91%</span>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- OVERVIEW -->
+    <div class="screen active" id="s-overview">
+      <div class="hero-band">
+        <div class="hero-top">
+          <div><div class="hero-greeting">Good morning,</div><div class="hero-name">Alhaji Emeka</div></div>
+          <div class="avatar">AE</div>
+        </div>
+        <div class="nw-card">
+          <div class="nw-label">Total Net Worth</div>
+          <div class="nw-val"><span>₦</span>2.84B</div>
+          <div class="nw-sub"><span class="nw-tag up">▲ +4.2% YTD</span><span class="nw-tag up">▲ +₦38M this week</span></div>
+        </div>
+      </div>
+      <div class="pad">
+        <div class="qs-grid">
+          <div class="qs"><div class="qs-l">Liquid Assets</div><div class="qs-v">₦892M</div><div class="qs-c pos">▲ +2.1%</div></div>
+          <div class="qs"><div class="qs-l">USD Holdings</div><div class="qs-v">$412K</div><div class="qs-c" style="color:var(--blue)">Rate: 1,642</div></div>
+          <div class="qs"><div class="qs-l">Real Estate</div><div class="qs-v">₦1.31B</div><div class="qs-c" style="color:var(--hint)">4 properties</div></div>
+          <div class="qs"><div class="qs-l">Equities</div><div class="qs-v">₦280M</div><div class="qs-c pos">▲ NSE +1.8%</div></div>
+        </div>
+        <div class="sec-label">Asset Allocation</div>
+        <div class="card">
+          <div class="alloc-bar">
+            <div class="alloc-seg" style="width:34%;background:#C9A84C"></div>
+            <div class="alloc-seg" style="width:24%;background:#60A5FA"></div>
+            <div class="alloc-seg" style="width:18%;background:#3ECF8E"></div>
+            <div class="alloc-seg" style="width:14%;background:#F87171"></div>
+            <div class="alloc-seg" style="width:10%;background:#6B6860"></div>
+          </div>
+          <div class="alloc-legend">
+            <div class="alloc-item"><div class="alloc-dot" style="background:#C9A84C"></div>Real Estate<span class="alloc-pct">34%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background:#60A5FA"></div>Bank Deposits<span class="alloc-pct">24%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background:#3ECF8E"></div>Equities<span class="alloc-pct">18%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background:#F87171"></div>FX Holdings<span class="alloc-pct">14%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background:#6B6860"></div>Businesses<span class="alloc-pct">10%</span></div>
+          </div>
+        </div>
+        <div class="sec-label">Net Worth Trend</div>
+        <div class="card" style="padding-bottom:12px">
+          <div style="position:relative;height:140px;width:100%"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 0 4px;opacity:0.2">
+          <svg width="16" height="16" viewBox="0 0 44 44" fill="none"><rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C"/><rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C"/><rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C"/><rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/></svg>
+          <span style="font-family:'Playfair Display',serif;font-size:12px;color:var(--muted)">Net<span style="color:var(--gold)">Wize</span></span>
+        </div>
+        <div class="bottom-pad"></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="screen" id="s-accounts">
+      <div class="acc-hero">
+        <div class="acc-total-l">Total Deposits</div>
+        <div class="acc-total-v">₦970M + $412K</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">Across 5 accounts · 3 banks</div>
+      </div>
+      <div class="pad">
+        <div class="sec-label">Nigerian Banks</div>
+        <div class="card">
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:11px"><div class="acc-ico" style="background:#0a2e1a;color:#3ECF8E">GT</div><div><div class="acc-name">GTBank Private</div><div class="acc-type">Premium Current · USD</div></div></div><div><div class="acc-amt">$412,000</div><div class="acc-chg pos">+$12,400 ↑</div></div></div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:11px"><div class="acc-ico" style="background:#0f1a3a;color:#60A5FA">ZB</div><div><div class="acc-name">Zenith Premier</div><div class="acc-type">Savings · NGN</div></div></div><div><div class="acc-amt">₦480M</div><div class="acc-chg neg">−₦2.1M ↓</div></div></div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:11px"><div class="acc-ico" style="background:#1a1000;color:#C9A84C">SB</div><div><div class="acc-name">Stanbic IBTC</div><div class="acc-type">Investment · NGN</div></div></div><div><div class="acc-amt">₦290M</div><div class="acc-chg pos">+₦8.5M ↑</div></div></div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:11px"><div class="acc-ico" style="background:#1a0a1a;color:#c084fc">AC</div><div><div class="acc-name">Access Private</div><div class="acc-type">Current · NGN</div></div></div><div><div class="acc-amt">₦200M</div><div class="acc-chg pos">+₦4.2M ↑</div></div></div>
+        </div>
+        <div class="sec-label">FX & Domiciliary</div>
+        <div class="fx-card">
+          <div class="row"><div style="font-size:12px;font-weight:500;color:var(--blue)">Live FX Rates</div><div style="display:inline-flex;align-items:center;gap:5px;background:rgba(62,207,142,0.1);border:0.5px solid rgba(62,207,142,0.2);color:var(--green);font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px"><span style="width:5px;height:5px;background:var(--green);border-radius:50%;display:inline-block"></span>Live</div></div>
+          <div class="fx-grid">
+            <div><div class="fx-pair">USD/NGN</div><div class="fx-rate">1,642</div><div class="fx-chg pos">▲ +12</div></div>
+            <div><div class="fx-pair">GBP/NGN</div><div class="fx-rate">2,080</div><div class="fx-chg neg">▼ −8</div></div>
+            <div><div class="fx-pair">EUR/NGN</div><div class="fx-rate">1,790</div><div class="fx-chg pos">▲ +5</div></div>
+          </div>
+        </div>
+        <div class="bottom-pad"></div>
+      </div>
+    </div>
+
+    <!-- ASSETS -->
+    <div class="screen" id="s-assets">
+      <div class="pad" style="padding-top:16px">
+        <div class="row" style="margin-bottom:4px">
+          <div style="font-family:'Playfair Display',serif;font-size:24px;color:var(--ivory)">Assets</div>
+          <div style="display:inline-flex;align-items:center;gap:5px;background:var(--gold-dim);border:0.5px solid var(--gold-border);color:var(--gold);font-size:10px;font-weight:500;padding:4px 11px;border-radius:20px">₦1.59B total</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Real estate · equities · businesses</div>
+        <div class="sec-label">Real Estate</div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(201,168,76,0.1);color:var(--gold)">Residential</div><div class="prop-name">Ikoyi Waterfront Residence</div><div class="prop-loc">📍 Ikoyi, Lagos</div><div class="prop-stats"><div><div class="ps-l">Market Value</div><div class="ps-v">₦620M</div></div><div><div class="ps-l">Purchase Price</div><div class="ps-v">₦380M</div></div><div><div class="ps-l">Appreciation</div><div class="ps-v" style="color:var(--green)">+63%</div></div><div><div class="ps-l">Acquired</div><div class="ps-v">2019</div></div></div></div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(96,165,250,0.1);color:var(--blue)">Commercial</div><div class="prop-name">Victoria Island Office Block</div><div class="prop-loc">📍 VI, Lagos</div><div class="prop-stats"><div><div class="ps-l">Market Value</div><div class="ps-v">₦410M</div></div><div><div class="ps-l">Annual Rental</div><div class="ps-v">₦28M</div></div><div><div class="ps-l">Yield</div><div class="ps-v" style="color:var(--green)">6.8%</div></div><div><div class="ps-l">Acquired</div><div class="ps-v">2021</div></div></div></div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(62,207,142,0.1);color:var(--green)">Land</div><div class="prop-name">Maitama Plot — 2 Hectares</div><div class="prop-loc">📍 Abuja, FCT</div><div class="prop-stats"><div><div class="ps-l">Market Value</div><div class="ps-v">₦185M</div></div><div><div class="ps-l">Appreciation</div><div class="ps-v" style="color:var(--green)">+41%</div></div><div><div class="ps-l">Status</div><div class="ps-v" style="color:var(--gold)">Freehold</div></div><div><div class="ps-l">Acquired</div><div class="ps-v">2022</div></div></div></div>
+        <div class="sec-label">NSE Equities</div>
+        <div class="card">
+          <div class="eq-row"><div><div class="eq-ticker">DANGCEM</div><div class="eq-name">Dangote Cement</div></div><div><div class="eq-val">₦82M</div><div class="eq-chg pos">▲ +3.2%</div></div></div>
+          <div class="eq-row"><div><div class="eq-ticker">GTCO</div><div class="eq-name">Guaranty Trust</div></div><div><div class="eq-val">₦64M</div><div class="eq-chg neg">▼ −1.1%</div></div></div>
+          <div class="eq-row"><div><div class="eq-ticker">AIRTELAFRI</div><div class="eq-name">Airtel Africa</div></div><div><div class="eq-val">₦78M</div><div class="eq-chg pos">▲ +0.8%</div></div></div>
+          <div class="eq-row"><div><div class="eq-ticker">MTNN</div><div class="eq-name">MTN Nigeria</div></div><div><div class="eq-val">₦56M</div><div class="eq-chg pos">▲ +2.4%</div></div></div>
+        </div>
+        <div class="bottom-pad"></div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS — AI POWERED -->
+    <div class="screen" id="s-insights">
+      <div class="pad" style="padding-top:16px">
+        <div style="font-family:'Playfair Display',serif;font-size:24px;color:var(--ivory);margin-bottom:4px">Intelligence</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:14px">AI-powered wealth insights</div>
+
+        <div class="ai-box">
+          <div class="ai-hdr">
+            <div class="ai-dot"></div>
+            <div class="ai-title">NetWize AI — Ask anything about your portfolio</div>
+          </div>
+
+          <!-- Chat area -->
+          <div class="ai-chat-area" id="chatArea">
+            <div class="ai-msg-bot">
+              Good morning. Your portfolio is up <strong>₦38M this week</strong> — strong performance from your NSE equities, led by <span class="gold">DANGCEM +3.2%</span>. Your T-bill opportunity is still open. What would you like to explore?
+            </div>
+          </div>
+
+          <!-- Prompt buttons -->
+          <div class="ai-btns" id="promptBtns">
+            <button class="ai-btn" onclick="askAI(this, 'How should I rebalance my portfolio?')">How should I rebalance my portfolio? <span>↗</span></button>
+            <button class="ai-btn" onclick="askAI(this, 'Best place to deploy ₦100M right now in Nigeria')">Best place to deploy ₦100M right now <span>↗</span></button>
+            <button class="ai-btn" onclick="askAI(this, 'Compare my portfolio yield vs Nigerian inflation')">Compare my yield vs inflation <span>↗</span></button>
+          </div>
+
+          <!-- Custom input -->
+          <div class="ai-custom-input">
+            <input type="text" id="customQuestion" placeholder="Ask anything about your portfolio..." onkeydown="if(event.key==='Enter')sendCustom()">
+            <button onclick="sendCustom()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0B" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="sec-label">Alerts</div>
+        <div class="insight-card"><div class="insight-ico" style="background:rgba(248,113,113,0.1)">⚠️</div><div class="insight-title">FX Exposure Risk</div><div class="insight-body">14% of your wealth is in USD assets. Your dollar position has gained ₦12M in naira value this quarter due to naira depreciation.</div><div class="insight-action">Tap to analyse →</div></div>
+        <div class="insight-card"><div class="insight-ico" style="background:rgba(201,168,76,0.1)">💡</div><div class="insight-title">Liquidity Optimization</div><div class="insight-body">₦480M in savings at 8% p.a. T-bills yield 22.5%. Moving ₦200M could earn an extra ₦28M per year.</div><div class="insight-action">Explore T-bills →</div></div>
+        <div class="bottom-pad"></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="s-profile">
+      <div class="profile-hero">
+        <div class="profile-avatar">AE</div>
+        <div class="profile-name">Alhaji Emeka O.</div>
+        <div class="profile-tier">✦ NetWize Private Client</div>
+        <div style="font-size:11px;color:var(--hint);margin-top:8px">Member since January 2026</div>
+      </div>
+      <div class="pad">
+        <div class="sub-card"><div class="sub-label">Monthly Subscription</div><div class="sub-val">₦350,000</div><div class="sub-note">Private Tier · Renews April 1, 2026</div></div>
+        <div class="sec-label">Connected Accounts</div>
+        <div class="card">
+          <div class="settings-row"><div class="settings-lbl">GTBank Private</div><div class="settings-val"><span style="color:var(--green)">●</span> Connected</div></div>
+          <div class="settings-row"><div class="settings-lbl">Zenith Premier</div><div class="settings-val"><span style="color:var(--green)">●</span> Connected</div></div>
+          <div class="settings-row"><div class="settings-lbl">Stanbic IBTC</div><div class="settings-val"><span style="color:var(--green)">●</span> Connected</div></div>
+          <div class="settings-row" style="cursor:pointer"><div class="settings-lbl" style="color:var(--gold)">+ Add Bank Account</div><div class="settings-val" style="color:var(--gold)">→</div></div>
+        </div>
+        <div class="sec-label">Preferences</div>
+        <div class="card">
+          <div class="settings-row"><div class="settings-lbl">Live sync</div><div class="toggle"></div></div>
+          <div class="settings-row"><div class="settings-lbl">AI insights</div><div class="toggle"></div></div>
+          <div class="settings-row"><div class="settings-lbl">Weekly digest</div><div class="toggle"></div></div>
+          <div class="settings-row"><div class="settings-lbl">Biometric login</div><div class="toggle off"></div></div>
+        </div>
+        <div class="sec-label">Security</div>
+        <div class="card">
+          <div class="settings-row"><div class="settings-lbl">2FA enabled</div><div class="settings-val"><span style="color:var(--green)">●</span> Active</div></div>
+          <div class="settings-row"><div class="settings-lbl">Last login</div><div class="settings-val">Today, 9:41 AM</div></div>
+          <div class="settings-row"><div class="settings-lbl">NDA signed</div><div class="settings-val"><span style="color:var(--green)">●</span> On file</div></div>
+          <div class="settings-row" style="cursor:pointer"><div class="settings-lbl" style="color:var(--red)">Sign out</div><div class="settings-val">→</div></div>
+        </div>
+        <div class="bottom-pad"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-item active" data-target="s-overview"><div class="nav-pip"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></div><div class="nav-lbl">Overview</div></div>
+    <div class="nav-item" data-target="s-accounts"><div class="nav-pip"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="7" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg></div><div class="nav-lbl">Accounts</div></div>
+    <div class="nav-item" data-target="s-assets"><div class="nav-pip"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-lbl">Assets</div></div>
+    <div class="nav-item" data-target="s-insights"><div class="nav-pip"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div class="nav-lbl">Insights</div></div>
+    <div class="nav-item" data-target="s-profile"><div class="nav-pip"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nav-lbl">Profile</div></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// Navigation
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const target = item.dataset.target;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.scrollTop = 0; });
+    item.classList.add('active');
+    document.getElementById(target).classList.add('active');
+  });
+});
+
+// Trend Chart
+window.addEventListener('load', () => {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+      datasets: [{
+        data: [2310, 2450, 2520, 2690, 2780, 2840],
+        borderColor: '#C9A84C', borderWidth: 2,
+        pointBackgroundColor: '#C9A84C', pointRadius: 3,
+        tension: 0.4, fill: true,
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 140);
+          g.addColorStop(0, 'rgba(201,168,76,0.15)');
+          g.addColorStop(1, 'rgba(201,168,76,0)');
+          return g;
+        }
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1E1E1C', borderColor: 'rgba(201,168,76,0.3)', borderWidth: 1, titleColor: '#C9A84C', bodyColor: '#F2EDE4', callbacks: { label: v => '₦' + v.raw + 'M' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#383634', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#383634', font: { size: 10 }, callback: v => '₦' + v + 'M' }, min: 2200, max: 2950 }
+      }
+    }
+  });
+});
+
+// ── AI CHAT ──
+const PORTFOLIO_CONTEXT = `You are NetWize AI, a private wealth intelligence assistant for high-net-worth Nigerians. You are currently advising a client with the following portfolio:
+
+TOTAL NET WORTH: ₦2.84 billion (up ₦38M this week, +4.2% YTD)
+
+BANK ACCOUNTS:
+- GTBank Private (USD domiciliary): $412,000 (~₦676M at current rate)
+- Zenith Premier (NGN savings): ₦480M at 8% p.a.
+- Stanbic IBTC (NGN investment): ₦290M
+- Access Private (NGN current): ₦200M
+
+REAL ESTATE (₦1.31B total):
+- Ikoyi Waterfront Residence: ₦620M (bought ₦380M in 2019, +63%)
+- Victoria Island Office Block: ₦410M commercial (rental yield 6.8%, ₦28M/yr)
+- Maitama Plot Abuja: ₦185M (2 hectares, freehold, +41%)
+
+NSE EQUITIES (₦280M total):
+- DANGCEM: ₦82M (+3.2% this week)
+- GTCO: ₦64M (-1.1%)
+- AIRTELAFRI: ₦78M (+0.8%)
+- MTNN: ₦56M (+2.4%)
+
+FX: USD/NGN 1,642 | GBP/NGN 2,080 | EUR/NGN 1,790
+CURRENT CBN T-BILL RATE: 22.5%
+NIGERIAN INFLATION: ~33%
+
+Your role is to give clear, direct, specific financial advice based on this portfolio. Be conversational but authoritative. Use naira amounts when relevant. Keep responses concise — 3-5 sentences max. Always give a specific actionable recommendation. You are speaking directly to the client. Do not use markdown formatting like ** or ##.`;
+
+async function askAI(btn, question) {
+  if (btn) {
+    btn.classList.add('loading');
+    btn.querySelector('span').textContent = '...';
+  }
+
+  const chatArea = document.getElementById('chatArea');
+
+  // Add user message
+  const userMsg = document.createElement('div');
+  userMsg.className = 'ai-msg-user';
+  userMsg.textContent = question;
+  chatArea.appendChild(userMsg);
+
+  // Add typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  chatArea.appendChild(typing);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: PORTFOLIO_CONTEXT,
+        messages: [{ role: 'user', content: question }]
+      })
+    });
+
+    const data = await response.json();
+    const answer = data.content[0].text;
+
+    // Remove typing indicator
+    typing.remove();
+
+    // Add bot response
+    const botMsg = document.createElement('div');
+    botMsg.className = 'ai-msg-bot';
+    botMsg.textContent = answer;
+    chatArea.appendChild(botMsg);
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+  } catch (error) {
+    typing.remove();
+    const errMsg = document.createElement('div');
+    errMsg.className = 'ai-msg-bot';
+    errMsg.textContent = 'Your portfolio data is loading. Based on your current holdings, I recommend reviewing your T-bill opportunity — moving ₦200M from Zenith savings at 8% to T-bills at 22.5% would generate an additional ₦29M annually at current rates.';
+    chatArea.appendChild(errMsg);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  if (btn) {
+    btn.classList.remove('loading');
+    btn.querySelector('span').textContent = '↗';
+  }
+}
+
+function sendCustom() {
+  const input = document.getElementById('customQuestion');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  askAI(null, q);
+}
+</script>
+</body>
+</html>
