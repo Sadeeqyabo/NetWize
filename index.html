@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetWize — Private Wealth Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --obsidian: #0D0D0B;
+  --surface: #161614;
+  --surface2: #1E1E1C;
+  --surface3: #252522;
+  --gold: #C9A84C;
+  --gold-light: #E8CC88;
+  --gold-dim: rgba(201,168,76,0.1);
+  --gold-border: rgba(201,168,76,0.22);
+  --ivory: #F2EDE4;
+  --muted: #6B6860;
+  --hint: #383634;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --green: #3ECF8E;
+  --red: #F87171;
+  --blue: #60A5FA;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--obsidian);
+  color: var(--ivory);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.5;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 22px 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(13,13,11,0.88);
+  backdrop-filter: blur(24px);
+  border-bottom: 0.5px solid var(--border);
+  transition: padding 0.3s;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-icon { width: 32px; height: 32px; }
+.nav-logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 500;
+  color: var(--ivory); letter-spacing: -0.2px;
+}
+.nav-logo-name span { color: var(--gold); }
+.nav-links { display: flex; gap: 36px; align-items: center; }
+.nav-links a {
+  font-size: 13px; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.2px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ivory); }
+.nav-cta {
+  font-size: 13px; font-weight: 400;
+  color: var(--gold);
+  border: 0.5px solid var(--gold-border);
+  background: var(--gold-dim);
+  padding: 10px 22px; border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.25s;
+  letter-spacing: 0.2px;
+}
+.nav-cta:hover { background: rgba(201,168,76,0.18); color: var(--gold-light); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 130px 40px 90px;
+  position: relative; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(ellipse, rgba(201,168,76,0.05) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-glow2 {
+  position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; height: 300px;
+  background: linear-gradient(to top, rgba(13,13,11,1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); border: 0.5px solid var(--gold-border);
+  padding: 7px 18px; border-radius: 30px;
+  margin-bottom: 40px;
+  animation: fadeUp 0.9s ease both;
+  background: var(--gold-dim);
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(46px, 6.5vw, 86px);
+  font-weight: 400; line-height: 1.06;
+  letter-spacing: -1.5px;
+  color: var(--ivory);
+  max-width: 820px;
+  animation: fadeUp 0.9s 0.1s ease both;
+}
+.hero h1 em { font-style: italic; color: var(--gold); }
+
+.hero-sub {
+  font-size: 17px; color: var(--muted);
+  max-width: 500px; line-height: 1.75;
+  margin-top: 26px;
+  animation: fadeUp 0.9s 0.2s ease both;
+}
+
+.hero-actions {
+  display: flex; gap: 14px; margin-top: 44px;
+  flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.9s 0.3s ease both;
+}
+.btn-gold {
+  background: var(--gold); color: var(--obsidian);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  padding: 16px 36px; border-radius: 6px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.25s; letter-spacing: 0.2px;
+}
+.btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(201,168,76,0.2); }
+.btn-outline {
+  background: transparent; color: var(--ivory);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 300;
+  padding: 16px 36px; border-radius: 6px;
+  text-decoration: none;
+  border: 0.5px solid var(--border2);
+  transition: all 0.25s; cursor: pointer;
+}
+.btn-outline:hover { border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.03); }
+
+/* hero stats */
+.hero-stats {
+  display: flex; gap: 56px; margin-top: 80px;
+  padding-top: 48px; border-top: 0.5px solid var(--border);
+  flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.9s 0.45s ease both;
+}
+.hero-stat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px; font-weight: 400;
+  color: var(--ivory); line-height: 1;
+}
+.hero-stat-val em { color: var(--gold); font-style: normal; }
+.hero-stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; letter-spacing: 0.2px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── TICKER BAND ── */
+.ticker-band {
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+  padding: 14px 0; overflow: hidden;
+  position: relative;
+}
+.ticker-track {
+  display: flex; gap: 48px;
+  animation: ticker 28s linear infinite;
+  width: max-content;
+}
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker-item {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--muted); white-space: nowrap; flex-shrink: 0;
+}
+.ticker-item .pair { color: var(--ivory); font-weight: 500; }
+.ticker-item .up { color: var(--green); }
+.ticker-item .dn { color: var(--red); }
+.ticker-sep { color: var(--hint); }
+
+/* ── SECTIONS ── */
+.section { padding: 110px 64px; }
+.section-inner { max-width: 1080px; margin: 0 auto; }
+.eyebrow {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--gold); opacity: 0.8; margin-bottom: 18px;
+}
+.section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 4vw, 50px);
+  font-weight: 400; line-height: 1.12;
+  letter-spacing: -0.5px; color: var(--ivory);
+}
+.section h2 em { font-style: italic; color: var(--gold); }
+.gold-rule { width: 36px; height: 1px; background: var(--gold); opacity: 0.5; margin: 22px 0; }
+
+/* ── PROBLEM GRID ── */
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+  border: 0.5px solid var(--border);
+  border-radius: 18px; overflow: hidden;
+  margin-top: 56px;
+}
+.prob-cell {
+  background: var(--surface);
+  padding: 40px 38px;
+  transition: background 0.3s;
+}
+.prob-cell:hover { background: var(--surface2); }
+.prob-n {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px; font-weight: 400;
+  color: var(--hint); line-height: 1;
+  margin-bottom: 16px;
+}
+.prob-title { font-size: 15px; font-weight: 500; color: var(--ivory); margin-bottom: 10px; }
+.prob-body { font-size: 13px; color: var(--muted); line-height: 1.75; }
+
+/* ── HOW ── */
+.how-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 1px; background: var(--border);
+  border: 0.5px solid var(--border);
+  border-radius: 18px; overflow: hidden;
+  margin-top: 56px;
+}
+.how-cell { background: var(--surface); padding: 40px 34px; }
+.how-step { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.65; margin-bottom: 10px; }
+.how-icon-wrap {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--gold-dim);
+  border: 0.5px solid var(--gold-border);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.how-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px; font-weight: 400;
+  color: var(--ivory); margin-bottom: 12px;
+}
+.how-body { font-size: 13px; color: var(--muted); line-height: 1.75; }
+
+/* ── DASHBOARD PREVIEW ── */
+.preview-section { padding: 0 64px 110px; }
+.preview-inner { max-width: 1080px; margin: 0 auto; }
+.preview-frame {
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: 20px; overflow: hidden;
+  position: relative;
+}
+.preview-bar {
+  background: var(--surface2);
+  border-bottom: 0.5px solid var(--border);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.preview-dots { display: flex; gap: 6px; }
+.preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+.preview-url {
+  flex: 1; text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--muted);
+}
+.preview-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.prev-card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; }
+.prev-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.prev-val { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--ivory); }
+.prev-val span { color: var(--gold); }
+.prev-change { font-size: 11px; margin-top: 5px; }
+.prev-bar-wrap { grid-column: span 3; background: var(--surface2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; }
+.prev-bar-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.prev-alloc { display: flex; height: 8px; border-radius: 8px; overflow: hidden; gap: 2px; }
+
+/* ── QUOTE ── */
+.quote-band {
+  padding: 80px 64px;
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+  text-align: center;
+}
+.quote-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 72px; color: var(--gold);
+  opacity: 0.25; line-height: 0.5;
+  margin-bottom: 20px; display: block;
+}
+.quote-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 2.8vw, 34px);
+  font-weight: 400; font-style: italic;
+  color: var(--ivory); line-height: 1.45;
+  max-width: 680px; margin: 0 auto;
+}
+.quote-attr { font-size: 13px; color: var(--muted); margin-top: 24px; letter-spacing: 0.3px; }
+.quote-attr strong { color: var(--ivory); font-weight: 400; }
+
+/* ── PRICING ── */
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 56px; }
+.price-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 18px; padding: 36px 28px;
+  display: flex; flex-direction: column;
+  transition: border-color 0.3s;
+}
+.price-card:hover { border-color: var(--border2); }
+.price-card.featured {
+  background: linear-gradient(160deg, #161408, #201e0e);
+  border-color: var(--gold-border);
+  position: relative;
+}
+.featured-badge {
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: var(--obsidian);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.5px;
+  padding: 4px 16px; border-radius: 0 0 10px 10px;
+}
+.price-tier { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+.price-card.featured .price-tier { color: var(--gold); }
+.price-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px; font-weight: 400; color: var(--ivory); line-height: 1;
+}
+.price-sub { font-size: 12px; color: var(--muted); margin-top: 6px; margin-bottom: 28px; }
+.price-currency { font-size: 18px; font-family: 'DM Mono', monospace; color: var(--gold); vertical-align: super; }
+.price-features { list-style: none; display: flex; flex-direction: column; gap: 11px; flex: 1; }
+.price-features li {
+  font-size: 13px; color: var(--muted);
+  display: flex; align-items: flex-start; gap: 10px; line-height: 1.5;
+}
+.price-features li::before { content: '—'; color: var(--gold); opacity: 0.55; flex-shrink: 0; }
+.price-btn {
+  display: block; margin-top: 28px;
+  text-align: center; text-decoration: none;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  padding: 14px; border-radius: 8px;
+  transition: all 0.25s;
+}
+.price-card:not(.featured) .price-btn {
+  color: var(--ivory);
+  border: 0.5px solid var(--border2);
+}
+.price-card:not(.featured) .price-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+.price-card.featured .price-btn {
+  background: var(--gold); color: var(--obsidian); font-weight: 500;
+}
+.price-card.featured .price-btn:hover { background: var(--gold-light); }
+
+/* ── CONTACT ── */
+.contact-section {
+  padding: 120px 64px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.contact-glow {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(201,168,76,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.contact-section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(34px, 5vw, 62px);
+  font-weight: 400; line-height: 1.08;
+  letter-spacing: -0.8px; margin-bottom: 18px;
+}
+.contact-section h2 em { font-style: italic; color: var(--gold); }
+.contact-section p { font-size: 16px; color: var(--muted); max-width: 460px; margin: 0 auto 44px; line-height: 1.75; }
+.contact-form {
+  display: flex; flex-direction: column;
+  gap: 12px; max-width: 400px; margin: 0 auto;
+}
+.contact-form input {
+  width: 100%; padding: 16px 20px;
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: 8px;
+  color: var(--ivory);
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  outline: none; transition: border-color 0.2s;
+}
+.contact-form input::placeholder { color: var(--muted); }
+.contact-form input:focus { border-color: var(--gold-border); }
+.contact-note { font-size: 12px; color: var(--hint); margin-top: 10px; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 36px 64px;
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-logo { display: flex; align-items: center; gap: 8px; }
+.footer-logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 400; color: var(--muted);
+}
+.footer-logo-name span { color: var(--gold); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 12px; color: var(--hint); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--muted); }
+.footer-copy { font-size: 12px; color: var(--hint); }
+
+/* ── REVEAL ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.75s ease, transform 0.75s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 18px 24px; }
+  .nav-links { display: none; }
+  .section { padding: 72px 24px; }
+  .preview-section { padding: 0 24px 72px; }
+  .problem-grid { grid-template-columns: 1fr; }
+  .how-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .quote-band { padding: 60px 24px; }
+  .contact-section { padding: 80px 24px; }
+  footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+  .hero { padding: 110px 24px 70px; }
+  .hero-stats { gap: 32px; }
+  .preview-body { grid-template-columns: 1fr; }
+  .prev-bar-wrap { grid-column: span 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg class="nav-logo-icon" viewBox="0 0 44 44" fill="none">
+      <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
+      <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
+      <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
+      <rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/>
+      <path d="M9 30 L17 22 L25 16 L33 8" stroke="#F2EDE4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+      <circle cx="33" cy="8" r="2.5" fill="#F2EDE4" opacity="0.6"/>
+    </svg>
+    <div class="nav-logo-name">Net<span>Wize</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#problem">The Problem</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <a href="#contact" class="nav-cta">Request Access</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><div class="hero-badge-dot"></div>Private Wealth Intelligence · Nigeria</div>
+  <h1>Know exactly<br>what you're <em>worth.</em></h1>
+  <p class="hero-sub">The first platform built for Nigeria's ₦1B+ individuals — unifying every bank, property, equity, and foreign currency into one live number.</p>
+  <div class="hero-actions">
+    <a href="#contact" class="btn-gold">Request Private Access</a>
+    <a href="#how" class="btn-outline">See How It Works</a>
+  </div>
+  <div class="hero-stats">
+    <div>
+      <div class="hero-stat-val">₦<em>1B+</em></div>
+      <div class="hero-stat-label">Minimum client net worth</div>
+    </div>
+    <div>
+      <div class="hero-stat-val"><em>5</em>+</div>
+      <div class="hero-stat-label">Asset classes unified</div>
+    </div>
+    <div>
+      <div class="hero-stat-val"><em>Live</em></div>
+      <div class="hero-stat-label">Real-time portfolio sync</div>
+    </div>
+    <div>
+      <div class="hero-stat-val"><em>100%</em></div>
+      <div class="hero-stat-label">Built for Nigeria</div>
+    </div>
+  </div>
+  <div class="hero-glow2"></div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-band">
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="pair">USD/NGN</span><span class="up">1,642 ▲</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">GBP/NGN</span><span class="dn">2,080 ▼</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">DANGCEM</span><span class="up">+3.2%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">GTCO</span><span class="dn">−1.1%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">NSE ASI</span><span class="up">+1.8%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">MTNN</span><span class="up">+2.4%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">EUR/NGN</span><span class="up">1,790 ▲</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">T-BILLS</span><span class="up">22.5% yield</span></div>
+    <div class="ticker-sep">·</div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item"><span class="pair">USD/NGN</span><span class="up">1,642 ▲</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">GBP/NGN</span><span class="dn">2,080 ▼</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">DANGCEM</span><span class="up">+3.2%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">GTCO</span><span class="dn">−1.1%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">NSE ASI</span><span class="up">+1.8%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">MTNN</span><span class="up">+2.4%</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">EUR/NGN</span><span class="up">1,790 ▲</span></div>
+    <div class="ticker-sep">·</div>
+    <div class="ticker-item"><span class="pair">T-BILLS</span><span class="up">22.5% yield</span></div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="section" id="problem">
+  <div class="section-inner">
+    <div class="eyebrow reveal">The Problem</div>
+    <h2 class="reveal">You're wealthy.<br>But you're <em>flying blind.</em></h2>
+    <div class="gold-rule reveal"></div>
+    <p class="reveal" style="font-size:16px;color:var(--muted);max-width:500px;line-height:1.8">Your wealth is scattered across banks, properties, businesses, and foreign accounts. No single tool exists in Nigeria to show you the full picture — until now.</p>
+    <div class="problem-grid reveal">
+      <div class="prob-cell">
+        <div class="prob-n">01</div>
+        <div class="prob-title">Scattered across banks</div>
+        <div class="prob-body">GTBank, Zenith, Stanbic, Access — you log into 4 different apps just to understand your own liquidity. There is no consolidated view, no total number, no clarity.</div>
+      </div>
+      <div class="prob-cell">
+        <div class="prob-n">02</div>
+        <div class="prob-title">Properties without live value</div>
+        <div class="prob-body">You know what you paid for your Ikoyi house in 2019. But what is it worth today? What's your total real estate exposure as a percentage of your net worth? Nobody has that number ready.</div>
+      </div>
+      <div class="prob-cell">
+        <div class="prob-n">03</div>
+        <div class="prob-title">FX exposure is invisible</div>
+        <div class="prob-body">The naira moves 8% in a month and you don't know what that does to your net worth. Dollar, pound, euro — the impact is real and immediate, but no one is tracking it for you in real time.</div>
+      </div>
+      <div class="prob-cell">
+        <div class="prob-n">04</div>
+        <div class="prob-title">No tool exists for Nigeria</div>
+        <div class="prob-body">Bloomberg Terminal is built for global institutions. Every personal finance app was designed for Western salaries. Nothing exists for the Nigerian HNI with complex, multi-asset, multi-currency wealth.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<div class="preview-section">
+  <div class="preview-inner reveal">
+    <div class="preview-frame">
+      <div class="preview-bar">
+        <div class="preview-dots">
+          <div class="preview-dot" style="background:#FF5F57"></div>
+          <div class="preview-dot" style="background:#FEBC2E"></div>
+          <div class="preview-dot" style="background:#28C840"></div>
+        </div>
+        <div class="preview-url">app.netwize.ng — Private Dashboard</div>
+      </div>
+      <div class="preview-body">
+        <div class="prev-card">
+          <div class="prev-label">Total Net Worth</div>
+          <div class="prev-val"><span>₦</span>2.84B</div>
+          <div class="prev-change" style="color:var(--green)">▲ +₦38M this week</div>
+        </div>
+        <div class="prev-card">
+          <div class="prev-label">Liquid Assets</div>
+          <div class="prev-val"><span>₦</span>892M</div>
+          <div class="prev-change" style="color:var(--green)">▲ +2.1% this month</div>
+        </div>
+        <div class="prev-card">
+          <div class="prev-label">USD Holdings</div>
+          <div class="prev-val">$412K</div>
+          <div class="prev-change" style="color:var(--blue)">Rate: 1,642</div>
+        </div>
+        <div class="prev-bar-wrap">
+          <div class="prev-bar-label">Asset Allocation</div>
+          <div class="prev-alloc">
+            <div style="width:34%;background:#C9A84C;height:100%"></div>
+            <div style="width:24%;background:#60A5FA;height:100%"></div>
+            <div style="width:18%;background:#3ECF8E;height:100%"></div>
+            <div style="width:14%;background:#F87171;height:100%"></div>
+            <div style="width:10%;background:#6B6860;height:100%"></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#C9A84C;border-radius:2px;display:inline-block"></span>Real Estate 34%</span>
+            <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#60A5FA;border-radius:2px;display:inline-block"></span>Bank Deposits 24%</span>
+            <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#3ECF8E;border-radius:2px;display:inline-block"></span>Equities 18%</span>
+            <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#F87171;border-radius:2px;display:inline-block"></span>FX 14%</span>
+            <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#6B6860;border-radius:2px;display:inline-block"></span>Business 10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="background:var(--surface);border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
+  <div class="section-inner">
+    <div class="eyebrow reveal">How It Works</div>
+    <h2 class="reveal">Total clarity in<br><em>three steps.</em></h2>
+    <div class="gold-rule reveal"></div>
+    <div class="how-grid reveal">
+      <div class="how-cell">
+        <div class="how-step">Step 01</div>
+        <div class="how-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div class="how-title">Connect your accounts</div>
+        <div class="how-body">We securely link your Nigerian bank accounts, brokerage portfolios, and FX holdings. GTBank, Zenith, Stanbic, Access — all connected with bank-grade encryption. You approve, we set up, you see everything.</div>
+      </div>
+      <div class="how-cell">
+        <div class="how-step">Step 02</div>
+        <div class="how-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        </div>
+        <div class="how-title">Add your assets</div>
+        <div class="how-body">Input your properties, business stakes, land, and physical assets. We track market valuations using real Nigerian property data — not foreign indices that mean nothing in Lagos or Abuja.</div>
+      </div>
+      <div class="how-cell">
+        <div class="how-step">Step 03</div>
+        <div class="how-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div class="how-title">See everything, clearly</div>
+        <div class="how-body">One dashboard. Your exact net worth, updated daily. AI-powered insights that tell you where to act, what's underperforming, and where your money should be working harder for you.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-band reveal">
+  <span class="quote-mark">"</span>
+  <p class="quote-text">For the first time, I knew exactly what I was worth — not an estimate, not a feeling. One number, updated every morning.</p>
+  <p class="quote-attr"><strong>Beta Client</strong> — Lagos entrepreneur, ₦3.2B net worth</p>
+</div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-inner">
+    <div style="text-align:center">
+      <div class="eyebrow reveal">Pricing</div>
+      <h2 class="reveal" style="max-width:100%">Private access.<br><em>No surprises.</em></h2>
+      <div class="gold-rule reveal" style="margin:22px auto"></div>
+      <p class="reveal" style="font-size:15px;color:var(--muted);max-width:440px;margin:0 auto">We onboard a limited number of clients each quarter. Every member receives dedicated, white-glove attention from day one.</p>
+    </div>
+    <div class="pricing-grid reveal">
+      <div class="price-card">
+        <div class="price-tier">Essential</div>
+        <div class="price-val"><span class="price-currency">₦</span>200,000</div>
+        <div class="price-sub">per month</div>
+        <ul class="price-features">
+          <li>Up to 3 bank accounts connected</li>
+          <li>Core net worth dashboard</li>
+          <li>Monthly AI insights report</li>
+          <li>FX rate monitoring</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#contact" class="price-btn">Request Access</a>
+      </div>
+      <div class="price-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="price-tier">Private</div>
+        <div class="price-val"><span class="price-currency">₦</span>350,000</div>
+        <div class="price-sub">per month</div>
+        <ul class="price-features">
+          <li>Unlimited bank accounts</li>
+          <li>Real estate & equity tracking</li>
+          <li>Weekly AI portfolio insights</li>
+          <li>Live FX impact analysis</li>
+          <li>Dedicated relationship manager</li>
+          <li>Priority onboarding</li>
+        </ul>
+        <a href="#contact" class="price-btn">Request Access</a>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Signature</div>
+        <div class="price-val"><span class="price-currency">₦</span>500,000</div>
+        <div class="price-sub">per month</div>
+        <ul class="price-features">
+          <li>Everything in Private</li>
+          <li>Business valuation tracking</li>
+          <li>Custom reporting suite</li>
+          <li>Multi-family support</li>
+          <li>Direct WhatsApp line</li>
+          <li>Quarterly strategy review</li>
+        </ul>
+        <a href="#contact" class="price-btn">Request Access</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section reveal" id="contact">
+  <div class="contact-glow"></div>
+  <h2>Ready to see your<br><em>full picture?</em></h2>
+  <p>We onboard a maximum of 10 new clients per quarter. Leave your details and our team will reach out within 48 hours.</p>
+  <div class="contact-form">
+    <input type="text" id="inp-name" placeholder="Your full name">
+    <input type="tel" id="inp-phone" placeholder="WhatsApp number">
+    <input type="text" id="inp-ref" placeholder="How did you hear about NetWize? (optional)">
+    <button class="btn-gold" style="width:100%;font-size:15px;padding:18px" onclick="handleSubmit()">Request Private Access</button>
+  </div>
+  <p class="contact-note">Maximum 10 clients per quarter · Response within 48 hours · Strict NDA on all client data</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <svg width="22" height="22" viewBox="0 0 44 44" fill="none">
+      <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
+      <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
+      <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
+      <rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/>
+    </svg>
+    <div class="footer-logo-name">Net<span>Wize</span></div>
+  </div>
+  <div class="footer-links">
+    <a href="#problem">About</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="mailto:hello@netwize.ng">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 NetWize · Private Wealth Intelligence · Nigeria</div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.querySelector('nav').style.padding = window.scrollY > 60 ? '14px 64px' : '22px 64px';
+});
+
+// Form
+function handleSubmit() {
+  const name = document.getElementById('inp-name').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  if (!name || !phone) { alert('Please fill in your name and WhatsApp number.'); return; }
+  document.querySelector('.contact-section h2').innerHTML = 'Request <em>received.</em>';
+  document.querySelector('.contact-section p').textContent = 'Thank you, ' + name + '. Our team will reach out to your WhatsApp number within 48 hours.';
+  document.querySelector('.contact-form').style.display = 'none';
+  document.querySelector('.contact-note').style.display = 'none';
+}
+</script>
+</body>
+</html>
