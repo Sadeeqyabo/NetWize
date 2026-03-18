@@ -1,313 +1,312 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>NetWize — Create Your PIN</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetWize — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.1); --gold-border: rgba(201,168,76,0.22); --green: #3ECF8E; --red: #F87171; }
-body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0D0D0B; font-family: 'DM Sans', sans-serif; font-weight: 300; padding: 24px; }
+:root { --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.1); --gold-border: rgba(201,168,76,0.22); --green: #3ECF8E; --red: #F87171; --bg: #0D0D0B; --surface: #161614; --surface2: #1E1E1C; --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11); --text: #F2EDE4; --muted: #6B6860; --hint: #383634; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
 
-.box { width: 100%; max-width: 400px; text-align: center; }
-.logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 40px; }
-.logo-name { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 500; color: #F2EDE4; }
-.logo-name span { color: var(--gold); }
+.admin-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.admin-login-box { width: 100%; max-width: 360px; text-align: center; }
+.admin-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 400; color: var(--text); margin-bottom: 8px; }
+.admin-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+.admin-input { width: 100%; padding: 16px; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: 10px; color: var(--text); font-size: 16px; font-family: 'DM Mono', monospace; text-align: center; letter-spacing: 4px; outline: none; transition: border-color 0.2s; }
+.admin-input:focus { border-color: var(--gold-border); }
+.admin-btn { width: 100%; background: var(--gold); color: var(--bg); font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 16px; border-radius: 10px; border: none; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
+.admin-btn:hover { background: #E8CC88; }
+.admin-error { font-size: 13px; color: var(--red); margin-top: 10px; min-height: 20px; }
 
-.step { display: none; }
-.step.active { display: block; }
+.admin-dash { display: none; }
+.admin-dash.visible { display: block; }
+.admin-nav { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.admin-nav-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; color: var(--text); }
+.admin-nav-name span { color: var(--gold); }
+.admin-badge { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; background: rgba(248,113,113,0.1); color: var(--red); border: 0.5px solid rgba(248,113,113,0.2); padding: 4px 10px; border-radius: 20px; margin-left: 10px; }
+.admin-logout { font-size: 12px; color: var(--muted); cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 0.5px solid var(--border2); background: none; font-family: 'DM Sans', sans-serif; }
 
-/* STEP 1 - WELCOME */
-.welcome-card { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 20px; padding: 32px 28px; margin-bottom: 24px; }
-.welcome-icon { font-size: 36px; margin-bottom: 16px; }
-.welcome-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: #F2EDE4; margin-bottom: 8px; }
-.welcome-name { color: var(--gold); }
-.welcome-sub { font-size: 13px; color: #6B6860; line-height: 1.7; }
-.welcome-tier { display: inline-flex; align-items: center; gap: 6px; background: var(--gold-dim); border: 0.5px solid var(--gold-border); color: var(--gold); font-size: 11px; font-weight: 500; padding: 5px 14px; border-radius: 20px; margin-top: 14px; }
+.admin-body { max-width: 900px; margin: 0 auto; padding: 40px 32px; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+.section-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
 
-/* STEP 2 - CREATE PIN */
-.step-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-bottom: 8px; }
-.step-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: #F2EDE4; margin-bottom: 8px; }
-.step-sub { font-size: 13px; color: #6B6860; margin-bottom: 32px; line-height: 1.6; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 40px; }
+.stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px; }
+.stat-label { font-size: 11px; color: var(--hint); margin-bottom: 8px; }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--text); line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-.pin-display { display: flex; gap: 12px; justify-content: center; margin-bottom: 32px; }
-.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.11); transition: all 0.2s; }
-.pin-dot.filled { background: var(--gold); border-color: var(--gold); }
-.pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.4s ease; }
-.pin-dot.success { background: var(--green); border-color: var(--green); }
-@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+.add-form { background: var(--surface); border: 0.5px solid var(--border2); border-radius: 16px; padding: 28px; margin-bottom: 40px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.form-field label { font-size: 11px; color: var(--hint); letter-spacing: 0.5px; display: block; margin-bottom: 8px; text-transform: uppercase; }
+.form-field input, .form-field select { width: 100%; padding: 13px 16px; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: 10px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; }
+.form-field input:focus, .form-field select:focus { border-color: var(--gold-border); }
+.form-field input::placeholder { color: var(--hint); }
+.form-submit { background: var(--gold); color: var(--bg); font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 14px 28px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+.form-submit:hover { background: #E8CC88; }
+.form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 280px; margin: 0 auto 16px; }
-.pin-key { aspect-ratio: 1; background: #161614; border: 0.5px solid rgba(255,255,255,0.11); border-radius: 14px; font-size: 20px; font-weight: 400; color: #F2EDE4; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif; user-select: none; }
-.pin-key:hover { background: #1E1E1C; border-color: var(--gold-border); }
-.pin-key:active { transform: scale(0.94); background: var(--gold-dim); }
-.pin-key.delete { font-size: 16px; color: #6B6860; }
-.pin-key.empty { background: transparent; border: none; cursor: default; }
-.pin-key.empty:hover { background: transparent; }
+.link-result { display: none; background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 14px; padding: 20px 24px; margin-top: 16px; }
+.link-result.show { display: block; }
+.link-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.8; margin-bottom: 10px; }
+.link-url { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); background: var(--surface2); padding: 12px 14px; border-radius: 8px; word-break: break-all; margin-bottom: 12px; border: 0.5px solid var(--border2); }
+.link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.link-btn { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 9px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; }
+.link-btn.copy { background: var(--gold); color: var(--bg); }
+.link-btn.wa { background: rgba(37,211,102,0.1); color: #25D366; border: 0.5px solid rgba(37,211,102,0.2); }
+.link-btn.email { background: var(--surface2); color: var(--muted); border: 0.5px solid var(--border2); }
 
-.pin-hint { font-size: 12px; color: #383634; margin-bottom: 16px; min-height: 18px; }
-.pin-error { font-size: 13px; color: var(--red); margin-top: 8px; min-height: 20px; }
+.clients-table { background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+.table-header { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap: 12px; padding: 14px 20px; border-bottom: 0.5px solid var(--border); background: var(--surface2); }
+.th { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--hint); }
+.table-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap: 12px; padding: 16px 20px; border-bottom: 0.5px solid var(--border); align-items: center; }
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: var(--surface2); }
+.client-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.client-tier { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.client-nw { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+.badge-active { background: rgba(62,207,142,0.1); color: var(--green); }
+.badge-pending { background: rgba(201,168,76,0.1); color: var(--gold); }
+.tbl-btn { font-size: 11px; color: var(--gold); cursor: pointer; background: none; border: 0.5px solid var(--gold-border); padding: 5px 12px; border-radius: 6px; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.tbl-btn:hover { background: var(--gold-dim); }
+.empty-state { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
 
-/* STEP 3 - CONFIRM PIN */
-/* STEP 4 - SUCCESS */
-.success-card { background: linear-gradient(145deg, #0a2a12, #0f1f10); border: 0.5px solid rgba(62,207,142,0.25); border-radius: 20px; padding: 32px 28px; }
-.success-icon { font-size: 48px; margin-bottom: 16px; }
-.success-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: #F2EDE4; margin-bottom: 8px; }
-.success-sub { font-size: 13px; color: #6B6860; line-height: 1.7; margin-bottom: 24px; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: 10px; padding: 12px 20px; font-size: 13px; color: var(--text); z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
 
-/* LOADING */
-.loading-card { background: #161614; border: 0.5px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 40px 28px; }
-.loading-spinner { width: 36px; height: 36px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ERROR */
-.error-card { background: rgba(248,113,113,0.05); border: 0.5px solid rgba(248,113,113,0.2); border-radius: 20px; padding: 32px 28px; }
-.error-title { font-family: 'Playfair Display', serif; font-size: 22px; color: #F2EDE4; margin-bottom: 8px; }
-.error-sub { font-size: 13px; color: #6B6860; line-height: 1.7; }
-
-/* BUTTONS */
-.btn-gold { width: 100%; background: var(--gold); color: #0D0D0B; font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 18px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.25s; }
-.btn-gold:hover { background: #E8CC88; }
-.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-outline { width: 100%; background: transparent; color: #6B6860; font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 12px; border-radius: 10px; border: 0.5px solid rgba(255,255,255,0.11); cursor: pointer; transition: all 0.2s; margin-top: 10px; }
-.btn-outline:hover { color: #F2EDE4; border-color: rgba(255,255,255,0.22); }
-
-.privacy { font-size: 11px; color: #383634; margin-top: 20px; line-height: 1.6; }
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .table-header { grid-template-columns: 2fr 1fr 1fr; }
+  .table-row { grid-template-columns: 2fr 1fr 1fr; }
+  .admin-body { padding: 24px 16px; }
+}
 </style>
 </head>
 <body>
-<div class="box">
-  <div class="logo">
-    <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
-      <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
-      <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
-      <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
-      <rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/>
-      <path d="M9 30 L17 22 L25 16 L33 8" stroke="#F2EDE4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
-      <circle cx="33" cy="8" r="2.5" fill="#F2EDE4" opacity="0.6"/>
-    </svg>
-    <div class="logo-name">Net<span>Wize</span></div>
-  </div>
 
-  <!-- LOADING -->
-  <div class="step active" id="step-loading">
-    <div class="loading-card">
-      <div class="loading-spinner"></div>
-      <div style="font-size:14px;color:#6B6860">Verifying your setup link...</div>
+<div class="admin-login" id="adminLogin">
+  <div class="admin-login-box">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px">
+      <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
+        <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
+        <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
+        <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
+        <rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/>
+      </svg>
+      <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:500;color:#F2EDE4">Net<span style="color:#C9A84C">Wize</span> Admin</span>
     </div>
-  </div>
-
-  <!-- ERROR -->
-  <div class="step" id="step-error">
-    <div class="error-card">
-      <div style="font-size:36px;margin-bottom:16px">⚠️</div>
-      <div class="error-title">Invalid Setup Link</div>
-      <div class="error-sub">This setup link is invalid or has already been used. Please contact your NetWize advisor to receive a new link.<br><br>
-        <a href="mailto:private@netwize.live" style="color:#C9A84C">private@netwize.live</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 1: WELCOME -->
-  <div class="step" id="step-welcome">
-    <div class="welcome-card">
-      <div class="welcome-icon">✦</div>
-      <div class="welcome-title">Welcome to NetWize, <span class="welcome-name" id="welcome-name">...</span></div>
-      <div class="welcome-sub">You've been granted private access to your personal wealth intelligence dashboard. You'll now create a secure 6-digit PIN that only you will know.</div>
-      <div class="welcome-tier" id="welcome-tier">Private Client</div>
-    </div>
-    <button class="btn-gold" onclick="goToStep('step-create')">Create My PIN →</button>
-    <p class="privacy">Your PIN is encrypted and stored securely. NetWize staff cannot view or reset it. Keep it private.</p>
-  </div>
-
-  <!-- STEP 2: CREATE PIN -->
-  <div class="step" id="step-create">
-    <div class="step-label">Step 1 of 2</div>
-    <div class="step-title">Create your PIN</div>
-    <div class="step-sub">Choose a 6-digit PIN you'll remember. Do not use your birthday or obvious numbers.</div>
-    <div class="pin-display" id="create-display">
-      <div class="pin-dot" id="c0"></div>
-      <div class="pin-dot" id="c1"></div>
-      <div class="pin-dot" id="c2"></div>
-      <div class="pin-dot" id="c3"></div>
-      <div class="pin-dot" id="c4"></div>
-      <div class="pin-dot" id="c5"></div>
-    </div>
-    <div class="pin-hint" id="create-hint">Enter your 6-digit PIN</div>
-    <div class="pin-keypad">
-      <div class="pin-key" onclick="createInput('1')">1</div>
-      <div class="pin-key" onclick="createInput('2')">2</div>
-      <div class="pin-key" onclick="createInput('3')">3</div>
-      <div class="pin-key" onclick="createInput('4')">4</div>
-      <div class="pin-key" onclick="createInput('5')">5</div>
-      <div class="pin-key" onclick="createInput('6')">6</div>
-      <div class="pin-key" onclick="createInput('7')">7</div>
-      <div class="pin-key" onclick="createInput('8')">8</div>
-      <div class="pin-key" onclick="createInput('9')">9</div>
-      <div class="pin-key empty"></div>
-      <div class="pin-key" onclick="createInput('0')">0</div>
-      <div class="pin-key delete" onclick="createDelete()">⌫</div>
-    </div>
-    <div class="pin-error" id="create-error"></div>
-  </div>
-
-  <!-- STEP 3: CONFIRM PIN -->
-  <div class="step" id="step-confirm">
-    <div class="step-label">Step 2 of 2</div>
-    <div class="step-title">Confirm your PIN</div>
-    <div class="step-sub">Enter your PIN again to confirm it.</div>
-    <div class="pin-display" id="confirm-display">
-      <div class="pin-dot" id="f0"></div>
-      <div class="pin-dot" id="f1"></div>
-      <div class="pin-dot" id="f2"></div>
-      <div class="pin-dot" id="f3"></div>
-      <div class="pin-dot" id="f4"></div>
-      <div class="pin-dot" id="f5"></div>
-    </div>
-    <div class="pin-hint" id="confirm-hint">Re-enter your PIN to confirm</div>
-    <div class="pin-keypad">
-      <div class="pin-key" onclick="confirmInput('1')">1</div>
-      <div class="pin-key" onclick="confirmInput('2')">2</div>
-      <div class="pin-key" onclick="confirmInput('3')">3</div>
-      <div class="pin-key" onclick="confirmInput('4')">4</div>
-      <div class="pin-key" onclick="confirmInput('5')">5</div>
-      <div class="pin-key" onclick="confirmInput('6')">6</div>
-      <div class="pin-key" onclick="confirmInput('7')">7</div>
-      <div class="pin-key" onclick="confirmInput('8')">8</div>
-      <div class="pin-key" onclick="confirmInput('9')">9</div>
-      <div class="pin-key empty"></div>
-      <div class="pin-key" onclick="confirmInput('0')">0</div>
-      <div class="pin-key delete" onclick="confirmDelete()">⌫</div>
-    </div>
-    <div class="pin-error" id="confirm-error"></div>
-    <button class="btn-outline" onclick="goToStep('step-create'); createPin=''; updateCreateDisplay();">← Change PIN</button>
-  </div>
-
-  <!-- STEP 4: SAVING -->
-  <div class="step" id="step-saving">
-    <div class="loading-card">
-      <div class="loading-spinner"></div>
-      <div style="font-size:14px;color:#6B6860">Setting up your dashboard...</div>
-    </div>
-  </div>
-
-  <!-- STEP 5: SUCCESS -->
-  <div class="step" id="step-success">
-    <div class="success-card">
-      <div class="success-icon">✓</div>
-      <div class="success-title">You're all set.</div>
-      <div class="success-sub">Your PIN has been created. Your NetWize dashboard is ready. Keep your PIN safe — it cannot be recovered if lost.</div>
-      <button class="btn-gold" onclick="window.location.href='/dashboard'">Open My Dashboard →</button>
-    </div>
-    <p class="privacy">Save this link: netwize.live/dashboard · Use your PIN to log in anytime</p>
+    <div class="admin-title">Admin Access</div>
+    <div class="admin-sub">Enter your admin password</div>
+    <input class="admin-input" type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="admin-btn" onclick="doLogin()">Sign In</button>
+    <div class="admin-error" id="adminError"></div>
   </div>
 </div>
+
+<div class="admin-dash" id="adminDash">
+  <nav class="admin-nav">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="admin-nav-name">Net<span>Wize</span></div>
+      <div class="admin-badge">Admin Panel</div>
+    </div>
+    <button class="admin-logout" onclick="doLogout()">Sign out</button>
+  </nav>
+
+  <div class="admin-body">
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-val" id="s-total">0</div><div class="stat-sub">All time</div></div>
+      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-val" id="s-active" style="color:var(--green)">0</div><div class="stat-sub">PIN created</div></div>
+      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" id="s-pending" style="color:var(--gold)">0</div><div class="stat-sub">Awaiting PIN setup</div></div>
+      <div class="stat-card"><div class="stat-label">Est. MRR</div><div class="stat-val" id="s-mrr">₦0</div><div class="stat-sub">Monthly recurring</div></div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:6px">Add New Client</div>
+    <div class="section-sub">Fill in the details below. A unique setup link will be generated automatically.</div>
+    <div class="add-form">
+      <div class="form-grid">
+        <div class="form-field"><label>Full Name *</label><input id="f-name" type="text" placeholder="e.g. Alhaji Emeka Okafor"></div>
+        <div class="form-field"><label>WhatsApp Number *</label><input id="f-phone" type="tel" placeholder="+234 xxx xxxx xxxx"></div>
+        <div class="form-field"><label>Email Address</label><input id="f-email" type="email" placeholder="client@email.com"></div>
+        <div class="form-field"><label>Subscription Tier *</label>
+          <select id="f-tier">
+            <option value="Essential">Essential — ₦200,000/month</option>
+            <option value="Private" selected>Private — ₦350,000/month</option>
+            <option value="Signature">Signature — ₦500,000/month</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Net Worth (display)</label><input id="f-nw" type="text" placeholder="e.g. ₦2.84B"></div>
+        <div class="form-field"><label>Start Date</label><input id="f-date" type="date"></div>
+      </div>
+      <button class="form-submit" id="addBtn" onclick="addClient()">Generate Setup Link →</button>
+      <div class="link-result" id="linkResult">
+        <div class="link-label">✦ Setup Link — Send to Client</div>
+        <div class="link-url" id="linkUrl"></div>
+        <div class="link-actions">
+          <button class="link-btn copy" onclick="copyLink()">Copy Link</button>
+          <button class="link-btn wa" onclick="sendWA()">Send via WhatsApp</button>
+          <button class="link-btn email" onclick="sendMail()">Send via Email</button>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--hint);line-height:1.6">This link is single-use. Once the client creates their PIN, the link expires automatically.</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:6px">All Clients</div>
+    <div class="section-sub">Manage all NetWize clients. Resend setup links for pending clients.</div>
+    <div class="clients-table">
+      <div class="table-header">
+        <div class="th">Client</div>
+        <div class="th">Net Worth</div>
+        <div class="th">Tier</div>
+        <div class="th">Status</div>
+        <div class="th">Action</div>
+      </div>
+      <div id="clientsBody"><div class="empty-state">No clients yet — add your first client above</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const SUPABASE_URL = 'https://ebkixbivzrrokmdlsxmm.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVia2l4Yml2enJyb2ttZGxzeG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODU0NzQsImV4cCI6MjA4OTM2MTQ3NH0.uSamgJI2MeqZzgjBtFCJPqONKjlRq4J5fSSOOHPusaQ';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let setupToken = '';
-let clientData = null;
-let createPin = '';
-let confirmPin = '';
-const PIN_LEN = 6;
+// ⚠️ CHANGE THIS PASSWORD — only you should know it
+const ADMIN_PASS = 'NetWize2026!';
 
-// Get token from URL
-window.addEventListener('load', async () => {
-  const params = new URLSearchParams(window.location.search);
-  setupToken = params.get('token') || '';
-  if (!setupToken) { showError(); return; }
-  await verifyToken();
-});
+let currentLink = '';
+let currentClient = {};
 
-async function verifyToken() {
+function doLogin() {
+  const p = document.getElementById('adminPass').value;
+  if (p === ADMIN_PASS) {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminDash').classList.add('visible');
+    document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+    loadClients();
+  } else {
+    document.getElementById('adminError').textContent = 'Incorrect password.';
+  }
+}
+function doLogout() {
+  document.getElementById('adminLogin').style.display = 'flex';
+  document.getElementById('adminDash').classList.remove('visible');
+  document.getElementById('adminPass').value = '';
+}
+
+function genToken() {
+  return [Math.random().toString(36).substring(2,9), Math.random().toString(36).substring(2,9)].join('').toUpperCase();
+}
+
+async function addClient() {
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const tier = document.getElementById('f-tier').value;
+  const nw = document.getElementById('f-nw').value.trim();
+
+  if (!name || !phone) { showToast('Name and WhatsApp are required'); return; }
+
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true; btn.textContent = 'Generating...';
+
+  const token = genToken();
   try {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('setup_token', setupToken)
-      .eq('is_active', false)
-      .single();
-    if (error || !data) { showError(); return; }
-    clientData = data;
-    document.getElementById('welcome-name').textContent = data.name.split(' ')[0];
-    document.getElementById('welcome-tier').textContent = '✦ ' + (data.tier || 'Private') + ' Client';
-    goToStep('step-welcome');
-  } catch { showError(); }
-}
-
-function showError() { goToStep('step-error'); }
-
-function goToStep(id) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// Simple hash function
-async function hashPin(pin) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(pin + setupToken);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// CREATE PIN
-function createInput(d) {
-  if (createPin.length >= PIN_LEN) return;
-  createPin += d;
-  updateCreateDisplay();
-  if (createPin.length === PIN_LEN) setTimeout(() => goToStep('step-confirm'), 200);
-}
-function createDelete() { createPin = createPin.slice(0,-1); updateCreateDisplay(); document.getElementById('create-error').textContent = ''; }
-function updateCreateDisplay() {
-  for (let i = 0; i < PIN_LEN; i++) {
-    const dot = document.getElementById('c' + i);
-    dot.classList.toggle('filled', i < createPin.length);
-    dot.classList.remove('error');
-  }
-}
-
-// CONFIRM PIN
-function confirmInput(d) {
-  if (confirmPin.length >= PIN_LEN) return;
-  confirmPin += d;
-  updateConfirmDisplay();
-  if (confirmPin.length === PIN_LEN) setTimeout(checkConfirm, 200);
-}
-function confirmDelete() { confirmPin = confirmPin.slice(0,-1); updateConfirmDisplay(); document.getElementById('confirm-error').textContent = ''; }
-function updateConfirmDisplay() {
-  for (let i = 0; i < PIN_LEN; i++) {
-    const dot = document.getElementById('f' + i);
-    dot.classList.toggle('filled', i < confirmPin.length);
-    dot.classList.remove('error');
-  }
-}
-
-async function checkConfirm() {
-  if (createPin !== confirmPin) {
-    for (let i = 0; i < PIN_LEN; i++) document.getElementById('f' + i).classList.add('error');
-    document.getElementById('confirm-error').textContent = 'PINs do not match. Please try again.';
-    setTimeout(() => { confirmPin = ''; updateConfirmDisplay(); }, 1000);
-    return;
-  }
-  // PINs match — save
-  goToStep('step-saving');
-  try {
-    const hashed = await hashPin(createPin);
-    const { error } = await supabase
-      .from('clients')
-      .update({ pin_hash: hashed, is_active: true, setup_token: 'USED_' + setupToken })
-      .eq('setup_token', setupToken);
+    const { error } = await sb.from('clients').insert({ setup_token: token, name, pin_hash: '', tier, net_worth: nw || '—', is_active: false });
     if (error) throw error;
-    goToStep('step-success');
-  } catch (e) {
-    goToStep('step-confirm');
-    document.getElementById('confirm-error').textContent = 'Something went wrong. Please try again or contact private@netwize.live';
-  }
+
+    const url = `https://netwize.live/setup?token=${token}`;
+    currentLink = url;
+    currentClient = { name, phone, email, tier };
+
+    document.getElementById('linkUrl').textContent = url;
+    document.getElementById('linkResult').classList.add('show');
+    showToast('✓ Client added — setup link ready');
+    loadClients();
+    ['f-name','f-phone','f-email','f-nw'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) { showToast('Error: ' + e.message); }
+
+  btn.disabled = false; btn.textContent = 'Generate Setup Link →';
+}
+
+function copyLink() { navigator.clipboard.writeText(currentLink); showToast('Link copied to clipboard'); }
+
+function sendWA() {
+  const firstName = currentClient.name.split(' ')[0];
+  const msg = encodeURIComponent(`Hi ${firstName},\n\nWelcome to NetWize — your private wealth intelligence dashboard is ready.\n\nClick the link below to create your secure PIN:\n\n${currentLink}\n\nAfter setup, log in anytime at: netwize.live/dashboard\n\nNetWize · private@netwize.live`);
+  const num = currentClient.phone.replace(/[^0-9]/g,'');
+  window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+}
+
+function sendMail() {
+  const sub = encodeURIComponent('Your NetWize Dashboard Is Ready');
+  const body = encodeURIComponent(`Dear ${currentClient.name},\n\nWelcome to NetWize.\n\nYour private wealth intelligence dashboard has been set up. Please click the link below to create your secure 6-digit PIN:\n\n${currentLink}\n\nThis link is unique to you. Once you create your PIN, you can access your dashboard anytime at:\nhttps://netwize.live/dashboard\n\nYour PIN is fully private — not even the NetWize team can see it.\n\nIf you have any questions, reply to this email or WhatsApp us directly.\n\nWarm regards,\nNetWize Private Wealth Intelligence\nprivate@netwize.live · netwize.live`);
+  window.open(`mailto:${currentClient.email}?subject=${sub}&body=${body}`);
+}
+
+async function loadClients() {
+  const { data } = await sb.from('clients').select('*').order('id', { ascending: false });
+  if (!data) return;
+
+  const active = data.filter(c => c.is_active).length;
+  const pending = data.filter(c => !c.is_active).length;
+  const prices = { Essential: 200000, Private: 350000, Signature: 500000 };
+  const mrr = data.filter(c => c.is_active).reduce((s,c) => s + (prices[c.tier] || 350000), 0);
+
+  document.getElementById('s-total').textContent = data.length;
+  document.getElementById('s-active').textContent = active;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-mrr').textContent = mrr >= 1000000 ? '₦' + (mrr/1000000).toFixed(1) + 'M' : '₦' + mrr.toLocaleString();
+
+  if (!data.length) { document.getElementById('clientsBody').innerHTML = '<div class="empty-state">No clients yet — add your first client above</div>'; return; }
+
+  document.getElementById('clientsBody').innerHTML = data.map(c => {
+    const isUsed = c.setup_token && c.setup_token.startsWith('USED_');
+    const statusBadge = c.is_active
+      ? `<span class="badge badge-active">● Active</span>`
+      : `<span class="badge badge-pending">○ Pending</span>`;
+    const action = c.is_active
+      ? `<button class="tbl-btn">Dashboard</button>`
+      : isUsed
+      ? `<button class="tbl-btn" onclick="resend(${c.id}, '${c.name}')">Resend</button>`
+      : `<button class="tbl-btn" onclick="copyToken('${c.setup_token}')">Copy Link</button>`;
+    return `<div class="table-row">
+      <div><div class="client-name">${c.name}</div><div class="client-tier">${c.tier || 'Private'}</div></div>
+      <div class="client-nw">${c.net_worth || '—'}</div>
+      <div style="font-size:12px;color:var(--muted)">${c.tier || 'Private'}</div>
+      <div>${statusBadge}</div>
+      <div>${action}</div>
+    </div>`;
+  }).join('');
+}
+
+function copyToken(token) {
+  const url = `https://netwize.live/setup?token=${token}`;
+  navigator.clipboard.writeText(url);
+  showToast('Setup link copied');
+}
+
+async function resend(id, name) {
+  const token = genToken();
+  await sb.from('clients').update({ setup_token: token, is_active: false }).eq('id', id);
+  copyToken(token);
+  showToast('New setup link generated for ' + name.split(' ')[0]);
+  loadClients();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.className = 'toast', 3000);
 }
 </script>
 </body>
