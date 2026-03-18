@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NetWize — Private Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,6 +54,10 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .pin-error { font-size: 13px; color: var(--red); margin-top: 8px; min-height: 20px; }
 .login-privacy { font-size: 11px; color: var(--hint); margin-top: 20px; line-height: 1.6; }
 
+/* checking state */
+.pin-checking { font-size: 13px; color: var(--gold); margin-top: 8px; min-height: 20px; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
 /* ── DASHBOARD ── */
 .dashboard { display: none; min-height: 100vh; }
 .dashboard.visible { display: block; }
@@ -62,7 +67,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .dash-nav-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; color: var(--text); }
 .dash-nav-name span { color: var(--gold); }
 .dash-nav-right { display: flex; align-items: center; gap: 14px; }
-.dash-client-badge { display: flex; align-items: center; gap: 8px; }
 .client-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #1e1608, #382c10); border: 1.5px solid var(--gold-border); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 12px; color: var(--gold); flex-shrink: 0; }
 .dash-client-name { font-size: 13px; color: var(--muted); }
 .dash-client-name strong { color: var(--text); font-weight: 500; }
@@ -82,14 +86,11 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
 .sidebar-divider { border: none; border-top: 0.5px solid var(--border); margin: 16px 8px; }
 .sync-badge { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 11px; color: var(--green); }
-.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
-
-/* WHATSAPP BUTTON IN SIDEBAR */
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; flex-shrink: 0; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 .wa-btn { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: rgba(37,211,102,0.1); border: 0.5px solid rgba(37,211,102,0.2); color: #25D366; font-size: 12px; font-weight: 500; cursor: pointer; margin: 8px 0; transition: all 0.2s; text-decoration: none; }
 .wa-btn:hover { background: rgba(37,211,102,0.18); }
 .wa-btn svg { width: 16px; height: 16px; fill: #25D366; flex-shrink: 0; }
-
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 .dash-main { flex: 1; padding: 32px; overflow-y: auto; max-width: 960px; }
 .dash-section { display: none; }
@@ -109,7 +110,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .metric-change { font-size: 11px; margin-top: 6px; }
 .last-updated { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--hint); background: var(--surface2); border: 0.5px solid var(--border); padding: 5px 12px; border-radius: 20px; margin-bottom: 20px; }
 
-/* NET WORTH HERO */
 .nw-hero { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 20px; padding: 28px 32px; margin-bottom: 16px; position: relative; overflow: hidden; }
 [data-theme="light"] .nw-hero { background: linear-gradient(145deg, #faf8f0, #f5f0e0); }
 .nw-hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 65%); pointer-events: none; }
@@ -128,7 +128,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .alloc-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 .alloc-pct { margin-left: auto; color: var(--text); font-weight: 500; font-size: 12px; }
 
-/* BANK ACCOUNTS */
 .acc-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
 .acc-row:last-child { border-bottom: none; }
 .acc-ico { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; font-family: 'DM Mono', monospace; }
@@ -136,9 +135,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .acc-type { font-size: 11px; color: var(--hint); margin-top: 2px; }
 .acc-amt { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text); text-align: right; }
 .acc-chg { font-size: 11px; text-align: right; margin-top: 2px; }
-.acc-total-bar { background: var(--gold-dim); border: 0.5px solid var(--gold-border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 
-/* NSE EQUITIES */
 .eq-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; padding: 8px 0; border-bottom: 0.5px solid var(--border); margin-bottom: 4px; }
 .eq-header-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--hint); }
 .eq-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; padding: 14px 0; border-bottom: 0.5px solid var(--border); align-items: center; }
@@ -150,7 +147,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .eq-bar { height: 4px; border-radius: 2px; margin-top: 6px; background: var(--surface3); overflow: hidden; }
 .eq-bar-fill { height: 100%; border-radius: 2px; background: var(--green); }
 
-/* FX */
 .fx-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
 .fx-card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 14px; padding: 20px; }
 .fx-pair { font-size: 11px; letter-spacing: 1px; color: var(--hint); margin-bottom: 8px; }
@@ -159,20 +155,20 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .fx-holding { font-size: 12px; color: var(--muted); margin-top: 8px; padding-top: 8px; border-top: 0.5px solid var(--border); }
 .fx-holding strong { color: var(--text); font-weight: 500; }
 
-/* WHAT IF SIMULATOR */
+.prop-card { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+.prop-tag { font-size: 9px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
+.prop-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.prop-loc { font-size: 12px; color: var(--hint); margin-bottom: 14px; }
+.prop-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.prop-stat-label { font-size: 10px; color: var(--hint); margin-bottom: 3px; }
+.prop-stat-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
+
 .simulator { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
 .sim-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
 .sim-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
 .sim-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 .sim-field label { font-size: 11px; color: var(--hint); letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
-.sim-field input, .sim-field select {
-  width: 100%; padding: 12px 14px;
-  background: var(--surface2); border: 0.5px solid var(--border2);
-  border-radius: 10px; color: var(--text); font-size: 14px;
-  font-family: 'DM Mono', monospace; outline: none; transition: border-color 0.2s;
-}
-.sim-field input:focus, .sim-field select:focus { border-color: var(--gold-border); }
-.sim-slider { width: 100%; accent-color: var(--gold); }
+.sim-field input[type="range"] { width: 100%; accent-color: var(--gold); }
 .sim-result { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 14px; padding: 20px 24px; }
 [data-theme="light"] .sim-result { background: linear-gradient(145deg, #faf8f0, #f5f0e0); }
 .sim-result-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.8; margin-bottom: 8px; }
@@ -184,42 +180,28 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .sim-scenario-label { font-size: 10px; color: var(--hint); margin-bottom: 6px; }
 .sim-scenario-val { font-size: 13px; font-weight: 500; }
 
-/* INFLATION COMPARISON */
 .inflation-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
 .inf-legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
 .inf-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
 
-/* PROPERTIES */
-.prop-card { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
-.prop-tag { font-size: 9px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
-.prop-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-.prop-loc { font-size: 12px; color: var(--hint); margin-bottom: 14px; }
-.prop-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.prop-stat-label { font-size: 10px; color: var(--hint); margin-bottom: 3px; }
-.prop-stat-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
-
-/* DIGEST */
 .digest-item { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 14px; padding: 20px 24px; cursor: pointer; transition: border-color 0.2s; margin-bottom: 12px; }
 .digest-item:hover { border-color: var(--gold-border); }
 .digest-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.digest-week { font-size: 11px; font-weight: 500; letter-spacing: 0.5px; color: var(--gold); }
+.digest-week { font-size: 11px; font-weight: 500; color: var(--gold); }
 .digest-date { font-size: 11px; color: var(--hint); }
-.digest-nw-change { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
 .digest-nw-val { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); }
 .digest-nw-diff { font-size: 12px; font-weight: 500; }
 .digest-insight-preview { font-size: 12px; color: var(--muted); line-height: 1.6; }
-.digest-expanded { display: none; margin-top: 16px; padding-top: 16px; border-top: 0.5px solid var(--border); }
+.digest-expanded { display: none; margin-top: 16px; padding-top: 16px; border-top: 0.5px solid var(--border); font-size: 13px; color: var(--muted); line-height: 1.75; }
 .digest-expanded.show { display: block; }
-.digest-insight-full { font-size: 13px; color: var(--muted); line-height: 1.75; }
-.digest-insight-full strong { color: var(--text); font-weight: 500; }
+.digest-expanded strong { color: var(--text); font-weight: 500; }
 .digest-action { background: var(--gold-dim); border: 0.5px solid var(--gold-border); border-radius: 10px; padding: 14px 16px; margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.65; }
 .digest-action strong { color: var(--gold); font-weight: 500; }
 
-/* AI CHAT */
 .ai-chat-container { display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 400px; }
 .ai-chat-header { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 14px; padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
 [data-theme="light"] .ai-chat-header { background: linear-gradient(145deg, #faf8f0, #f5f0e0); }
-.ai-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; }
+.ai-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: blink 2s infinite; }
 .ai-chat-title { font-size: 13px; font-weight: 500; color: var(--gold); }
 .ai-chat-sub { font-size: 11px; color: var(--muted); margin-left: auto; }
 .ai-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
@@ -245,12 +227,10 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .ai-send:hover { background: var(--gold-light); }
 .ai-send svg { width: 18px; height: 18px; }
 
-/* PDF BUTTON */
 .pdf-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: 10px; padding: 12px 20px; font-size: 13px; color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; margin-bottom: 20px; }
 .pdf-btn:hover { border-color: var(--gold-border); color: var(--gold); background: var(--gold-dim); }
 .pdf-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; }
 
-/* MOBILE */
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .dash-main { padding: 20px 16px; padding-bottom: 80px; }
@@ -262,14 +242,11 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
   .fx-grid { grid-template-columns: 1fr; }
   .sim-row { grid-template-columns: 1fr; }
   .sim-scenarios { grid-template-columns: 1fr; }
-  .eq-header { grid-template-columns: 2fr 1fr 1fr; }
-  .eq-row { grid-template-columns: 2fr 1fr 1fr; }
-  .eq-header .eq-header-label:last-child, .eq-row .eq-bar { display: none; }
   .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 0.5px solid var(--border); padding: 10px 0 20px; z-index: 100; justify-content: space-around; }
   .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1; }
-  .mobile-nav-item svg { width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 1.5; transition: stroke 0.2s; }
+  .mobile-nav-item svg { width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
   .mobile-nav-item.active svg { stroke: var(--gold); }
-  .mobile-nav-item span { font-size: 10px; color: var(--muted); transition: color 0.2s; }
+  .mobile-nav-item span { font-size: 10px; color: var(--muted); }
   .mobile-nav-item.active span { color: var(--gold); }
 }
 @media (min-width: 769px) { .mobile-nav { display: none; } }
@@ -316,13 +293,13 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
       <div class="pin-key delete" onclick="pinDelete()">⌫</div>
     </div>
     <div class="pin-error" id="pinError"></div>
+    <div class="pin-checking" id="pinChecking" style="display:none">Verifying...</div>
     <p class="login-privacy">Protected by 256-bit encryption · Strict NDA · netwize.live</p>
   </div>
 </div>
 
 <!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
-
   <nav class="dash-nav">
     <div class="dash-nav-logo">
       <svg width="26" height="26" viewBox="0 0 44 44" fill="none">
@@ -334,8 +311,8 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
       <div class="dash-nav-name">Net<span>Wize</span></div>
     </div>
     <div class="dash-nav-right">
-      <div class="dash-client-badge">
-        <div class="client-avatar" id="clientAvatar">AE</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="client-avatar" id="clientAvatar">--</div>
         <div class="dash-client-name">Welcome, <strong id="clientNameDisplay">Client</strong></div>
       </div>
       <div class="theme-toggle" onclick="toggleTheme()"></div>
@@ -344,46 +321,25 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
   </nav>
 
   <div class="dash-layout">
-
-    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="sidebar-label">Dashboard</div>
-      <div class="sidebar-item active" onclick="showSection('overview',this)">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview
-      </div>
-      <div class="sidebar-item" onclick="showSection('accounts',this)">
-        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="7" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>Bank Accounts
-      </div>
-      <div class="sidebar-item" onclick="showSection('equities',this)">
-        <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>NSE Equities
-      </div>
-      <div class="sidebar-item" onclick="showSection('fx',this)">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>FX & Currency
-      </div>
-      <div class="sidebar-item" onclick="showSection('properties',this)">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Properties
-      </div>
-      <div class="sidebar-item" onclick="showSection('simulator',this)">
-        <svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>What-If Simulator
-      </div>
-      <div class="sidebar-item" onclick="showSection('inflation',this)">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>vs Inflation
-      </div>
-      <div class="sidebar-item" onclick="showSection('digest',this)">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Wealth Digest
-      </div>
-      <div class="sidebar-item" onclick="showSection('ai',this)">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>NetWize AI
-      </div>
+      <div class="sidebar-item active" onclick="showSection('overview',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+      <div class="sidebar-item" onclick="showSection('accounts',this)"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="7" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>Bank Accounts</div>
+      <div class="sidebar-item" onclick="showSection('equities',this)"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>NSE Equities</div>
+      <div class="sidebar-item" onclick="showSection('fx',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>FX & Currency</div>
+      <div class="sidebar-item" onclick="showSection('properties',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Properties</div>
+      <div class="sidebar-item" onclick="showSection('simulator',this)"><svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>What-If Simulator</div>
+      <div class="sidebar-item" onclick="showSection('inflation',this)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>vs Inflation</div>
+      <div class="sidebar-item" onclick="showSection('digest',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Wealth Digest</div>
+      <div class="sidebar-item" onclick="showSection('ai',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>NetWize AI</div>
       <hr class="sidebar-divider">
-      <a class="wa-btn" id="waLink" href="#" target="_blank">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <a class="wa-btn" id="waAdvisorBtn" href="https://wa.me/2348000000000?text=Hi%20NetWize%20team" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Message Advisor
       </a>
       <div class="sync-badge"><div class="sync-dot"></div>Live · Updated today</div>
     </div>
 
-    <!-- MAIN -->
     <div class="dash-main">
 
       <!-- OVERVIEW -->
@@ -396,17 +352,17 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
         <div class="last-updated"><div class="sync-dot"></div>Last updated by NetWize team · Today</div>
         <div class="nw-hero">
           <div class="nw-hero-label">Total Net Worth</div>
-          <div class="nw-hero-val"><span>₦</span><span id="client-nw">2.84B</span></div>
+          <div class="nw-hero-val"><span>₦</span><span id="client-nw">—</span></div>
           <div class="nw-hero-sub">
-            <span class="nw-tag up" id="nw-weekly">▲ +₦38M this week</span>
-            <span class="nw-tag up" id="nw-ytd">▲ +4.2% YTD</span>
+            <span class="nw-tag up" id="nw-weekly">▲ Loading...</span>
+            <span class="nw-tag up" id="nw-ytd"></span>
             <span class="nw-tag neutral" id="nw-date"></span>
           </div>
         </div>
         <div class="metric-grid">
-          <div class="metric-card"><div class="metric-label">Liquid Assets</div><div class="metric-val" id="metric-liquid">₦892M</div><div class="metric-change" style="color:var(--green)">▲ +2.1% this month</div></div>
-          <div class="metric-card"><div class="metric-label">USD Holdings</div><div class="metric-val" id="metric-usd">$412K</div><div class="metric-change" style="color:var(--blue)">Rate: 1,642</div></div>
-          <div class="metric-card"><div class="metric-label">Real Estate</div><div class="metric-val" id="metric-re">₦1.31B</div><div class="metric-change" style="color:var(--hint)">4 properties</div></div>
+          <div class="metric-card"><div class="metric-label">Liquid Assets</div><div class="metric-val" id="metric-liquid">—</div><div class="metric-change" style="color:var(--green)">▲ +2.1% this month</div></div>
+          <div class="metric-card"><div class="metric-label">USD Holdings</div><div class="metric-val" id="metric-usd">—</div><div class="metric-change" style="color:var(--blue)">Rate: 1,642</div></div>
+          <div class="metric-card"><div class="metric-label">Real Estate</div><div class="metric-val" id="metric-re">—</div><div class="metric-change" style="color:var(--hint)">4 properties</div></div>
         </div>
         <div class="card">
           <div class="card-title">Asset Allocation</div>
@@ -431,237 +387,79 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
         </div>
         <button class="pdf-btn" onclick="downloadPDF()">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          Download Monthly Report (PDF)
+          Download Monthly Report
         </button>
       </div>
 
       <!-- BANK ACCOUNTS -->
       <div class="dash-section" id="sec-accounts">
-        <div class="section-header">
-          <div class="section-eyebrow">Banking</div>
-          <div class="section-title">Bank Accounts</div>
-          <div class="section-sub">All deposits across Nigerian banks</div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">Banking</div><div class="section-title">Bank Accounts</div><div class="section-sub">All deposits across Nigerian banks</div></div>
         <div class="card">
-          <div class="acc-row">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div class="acc-ico" style="background:#0a2e1a;color:#3ECF8E">GT</div>
-              <div><div class="acc-name">GTBank Private Banking</div><div class="acc-type">Domiciliary Account · USD</div></div>
-            </div>
-            <div><div class="acc-amt">$412,000</div><div class="acc-chg" style="color:var(--green)">+$12,400 this week ↑</div></div>
-          </div>
-          <div class="acc-row">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div class="acc-ico" style="background:#0f1a3a;color:#60A5FA">ZB</div>
-              <div><div class="acc-name">Zenith Bank Premier</div><div class="acc-type">Savings Account · NGN · 8% p.a.</div></div>
-            </div>
-            <div><div class="acc-amt">₦480M</div><div class="acc-chg" style="color:var(--red)">−₦2.1M this week ↓</div></div>
-          </div>
-          <div class="acc-row">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div class="acc-ico" style="background:#1a1000;color:#C9A84C">SB</div>
-              <div><div class="acc-name">Stanbic IBTC Private</div><div class="acc-type">Investment Account · NGN</div></div>
-            </div>
-            <div><div class="acc-amt">₦290M</div><div class="acc-chg" style="color:var(--green)">+₦8.5M this week ↑</div></div>
-          </div>
-          <div class="acc-row">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div class="acc-ico" style="background:#1a0a1a;color:#c084fc">AC</div>
-              <div><div class="acc-name">Access Bank Private</div><div class="acc-type">Current Account · NGN</div></div>
-            </div>
-            <div><div class="acc-amt">₦200M</div><div class="acc-chg" style="color:var(--green)">+₦4.2M this week ↑</div></div>
-          </div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:12px"><div class="acc-ico" style="background:#0a2e1a;color:#3ECF8E">GT</div><div><div class="acc-name">GTBank Private Banking</div><div class="acc-type">Domiciliary · USD</div></div></div><div><div class="acc-amt">$412,000</div><div class="acc-chg" style="color:var(--green)">+$12,400 ↑</div></div></div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:12px"><div class="acc-ico" style="background:#0f1a3a;color:#60A5FA">ZB</div><div><div class="acc-name">Zenith Bank Premier</div><div class="acc-type">Savings · NGN · 8% p.a.</div></div></div><div><div class="acc-amt">₦480M</div><div class="acc-chg" style="color:var(--red)">−₦2.1M ↓</div></div></div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:12px"><div class="acc-ico" style="background:#1a1000;color:#C9A84C">SB</div><div><div class="acc-name">Stanbic IBTC Private</div><div class="acc-type">Investment · NGN</div></div></div><div><div class="acc-amt">₦290M</div><div class="acc-chg" style="color:var(--green)">+₦8.5M ↑</div></div></div>
+          <div class="acc-row"><div style="display:flex;align-items:center;gap:12px"><div class="acc-ico" style="background:#1a0a1a;color:#c084fc">AC</div><div><div class="acc-name">Access Bank Private</div><div class="acc-type">Current · NGN</div></div></div><div><div class="acc-amt">₦200M</div><div class="acc-chg" style="color:var(--green)">+₦4.2M ↑</div></div></div>
         </div>
-        <div class="acc-total-bar">
-          <div>
-            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Total Bank Deposits</div>
-            <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--text)">₦970M + $412K</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">NGN equivalent</div>
-            <div style="font-size:20px;font-weight:500;color:var(--text)">₦1.65B</div>
-          </div>
+        <div style="background:var(--gold-dim);border:0.5px solid var(--gold-border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Total Deposits</div><div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--text)">₦970M + $412K</div></div>
+          <div style="text-align:right"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">NGN equivalent</div><div style="font-size:20px;font-weight:500;color:var(--text)">₦1.65B</div></div>
         </div>
-        <div class="card" style="margin-top:4px">
-          <div class="card-title">💡 Opportunity Alert</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.75">Your Zenith savings at <strong style="color:var(--text)">8% p.a.</strong> is significantly below the current CBN T-bill rate of <strong style="color:var(--gold)">22.5%</strong>. Moving ₦200M to Treasury Bills would generate an additional <strong style="color:var(--green)">₦29M per year</strong> with zero additional risk.</div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-title">💡 Opportunity</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.75">Zenith savings at <strong style="color:var(--text)">8% p.a.</strong> vs T-bill rate of <strong style="color:var(--gold)">22.5%</strong>. Moving ₦200M generates an extra <strong style="color:var(--green)">₦29M/year</strong> with zero risk.</div>
         </div>
       </div>
 
-      <!-- NSE EQUITIES -->
+      <!-- EQUITIES -->
       <div class="dash-section" id="sec-equities">
-        <div class="section-header">
-          <div class="section-eyebrow">Nigerian Stock Exchange</div>
-          <div class="section-title">Equity Portfolio</div>
-          <div class="section-sub">NSE positions · Updated daily</div>
-        </div>
-        <div class="metric-grid" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="section-header"><div class="section-eyebrow">Nigerian Stock Exchange</div><div class="section-title">Equity Portfolio</div><div class="section-sub">NSE positions · Updated daily</div></div>
+        <div class="metric-grid">
           <div class="metric-card"><div class="metric-label">Portfolio Value</div><div class="metric-val">₦280M</div><div class="metric-change" style="color:var(--green)">▲ +₦11.4M this week</div></div>
           <div class="metric-card"><div class="metric-label">Week Return</div><div class="metric-val">+4.2%</div><div class="metric-change" style="color:var(--green)">Best week of Q1</div></div>
           <div class="metric-card"><div class="metric-label">YTD Return</div><div class="metric-val">+14.2%</div><div class="metric-change" style="color:var(--green)">vs NSE ASI +8.1%</div></div>
         </div>
         <div class="card">
-          <div class="eq-header">
-            <div class="eq-header-label">Stock</div>
-            <div class="eq-header-label">Value</div>
-            <div class="eq-header-label">Week</div>
-            <div class="eq-header-label">Weight</div>
-          </div>
-          <div class="eq-row">
-            <div><div class="eq-ticker">DANGCEM</div><div class="eq-name">Dangote Cement Plc</div></div>
-            <div class="eq-val">₦82M</div>
-            <div class="eq-chg" style="color:var(--green)">+3.2%</div>
-            <div><div style="font-size:12px;color:var(--muted)">29.3%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:29%"></div></div></div>
-          </div>
-          <div class="eq-row">
-            <div><div class="eq-ticker">AIRTELAFRI</div><div class="eq-name">Airtel Africa Plc</div></div>
-            <div class="eq-val">₦78M</div>
-            <div class="eq-chg" style="color:var(--green)">+0.8%</div>
-            <div><div style="font-size:12px;color:var(--muted)">27.9%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:28%"></div></div></div>
-          </div>
-          <div class="eq-row">
-            <div><div class="eq-ticker">GTCO</div><div class="eq-name">Guaranty Trust Holding</div></div>
-            <div class="eq-val">₦64M</div>
-            <div class="eq-chg" style="color:var(--red)">−1.1%</div>
-            <div><div style="font-size:12px;color:var(--muted)">22.9%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:23%;background:var(--red)"></div></div></div>
-          </div>
-          <div class="eq-row">
-            <div><div class="eq-ticker">MTNN</div><div class="eq-name">MTN Nigeria Comms</div></div>
-            <div class="eq-val">₦56M</div>
-            <div class="eq-chg" style="color:var(--green)">+2.4%</div>
-            <div><div style="font-size:12px;color:var(--muted)">20.0%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:20%"></div></div></div>
-          </div>
+          <div class="eq-header"><div class="eq-header-label">Stock</div><div class="eq-header-label">Value</div><div class="eq-header-label">Week</div><div class="eq-header-label">Weight</div></div>
+          <div class="eq-row"><div><div class="eq-ticker">DANGCEM</div><div class="eq-name">Dangote Cement</div></div><div class="eq-val">₦82M</div><div class="eq-chg" style="color:var(--green)">+3.2%</div><div><div style="font-size:12px;color:var(--muted)">29.3%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:29%"></div></div></div></div>
+          <div class="eq-row"><div><div class="eq-ticker">AIRTELAFRI</div><div class="eq-name">Airtel Africa</div></div><div class="eq-val">₦78M</div><div class="eq-chg" style="color:var(--green)">+0.8%</div><div><div style="font-size:12px;color:var(--muted)">27.9%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:28%"></div></div></div></div>
+          <div class="eq-row"><div><div class="eq-ticker">GTCO</div><div class="eq-name">Guaranty Trust</div></div><div class="eq-val">₦64M</div><div class="eq-chg" style="color:var(--red)">−1.1%</div><div><div style="font-size:12px;color:var(--muted)">22.9%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:23%;background:var(--red)"></div></div></div></div>
+          <div class="eq-row"><div><div class="eq-ticker">MTNN</div><div class="eq-name">MTN Nigeria</div></div><div class="eq-val">₦56M</div><div class="eq-chg" style="color:var(--green)">+2.4%</div><div><div style="font-size:12px;color:var(--muted)">20.0%</div><div class="eq-bar"><div class="eq-bar-fill" style="width:20%"></div></div></div></div>
         </div>
-        <div class="card">
-          <div class="card-title">Portfolio vs NSE All Share Index</div>
-          <div style="position:relative;height:200px"><canvas id="equityChart"></canvas></div>
-        </div>
+        <div class="card"><div class="card-title">Portfolio vs NSE ASI</div><div style="position:relative;height:200px"><canvas id="equityChart"></canvas></div></div>
       </div>
 
-      <!-- FX & CURRENCY -->
+      <!-- FX -->
       <div class="dash-section" id="sec-fx">
-        <div class="section-header">
-          <div class="section-eyebrow">Foreign Exchange</div>
-          <div class="section-title">FX & Currency</div>
-          <div class="section-sub">Live rates · Naira equivalents</div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">Foreign Exchange</div><div class="section-title">FX & Currency</div><div class="section-sub">Live rates · Naira equivalents</div></div>
         <div class="fx-grid">
-          <div class="fx-card">
-            <div class="fx-pair">USD / NGN</div>
-            <div class="fx-rate">1,642</div>
-            <div class="fx-change" style="color:var(--red)">▲ Naira weakened +12 today</div>
-            <div class="fx-holding">Your holding: <strong>$412,000</strong><br>Naira equivalent: <strong>₦676M</strong><br>Week gain: <strong style="color:var(--green)">+₦5M</strong></div>
-          </div>
-          <div class="fx-card">
-            <div class="fx-pair">GBP / NGN</div>
-            <div class="fx-rate">2,080</div>
-            <div class="fx-change" style="color:var(--green)">▼ Naira strengthened −8 today</div>
-            <div class="fx-holding">Your holding: <strong>£0</strong><br>No GBP position currently<br><span style="color:var(--hint)">Consider diversifying</span></div>
-          </div>
-          <div class="fx-card">
-            <div class="fx-pair">EUR / NGN</div>
-            <div class="fx-rate">1,790</div>
-            <div class="fx-change" style="color:var(--red)">▲ Naira weakened +5 today</div>
-            <div class="fx-holding">Your holding: <strong>€0</strong><br>No EUR position currently<br><span style="color:var(--hint)">Consider diversifying</span></div>
-          </div>
+          <div class="fx-card"><div class="fx-pair">USD / NGN</div><div class="fx-rate">1,642</div><div class="fx-change" style="color:var(--red)">▲ Naira weakened</div><div class="fx-holding">Holding: <strong>$412,000</strong><br>NGN value: <strong>₦676M</strong><br>Week gain: <strong style="color:var(--green)">+₦5M</strong></div></div>
+          <div class="fx-card"><div class="fx-pair">GBP / NGN</div><div class="fx-rate">2,080</div><div class="fx-change" style="color:var(--green)">▼ Naira strengthened</div><div class="fx-holding">Holding: <strong>£0</strong><br>No GBP position<br><span style="color:var(--hint)">Consider diversifying</span></div></div>
+          <div class="fx-card"><div class="fx-pair">EUR / NGN</div><div class="fx-rate">1,790</div><div class="fx-change" style="color:var(--red)">▲ Naira weakened</div><div class="fx-holding">Holding: <strong>€0</strong><br>No EUR position<br><span style="color:var(--hint)">Consider diversifying</span></div></div>
         </div>
-        <div class="card">
-          <div class="card-title">FX Impact on Net Worth — Last 12 Months</div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7">Your USD position has acted as a <strong style="color:var(--text)">natural hedge</strong> against naira depreciation. The naira has weakened approximately <strong style="color:var(--text)">18% against the dollar</strong> over the past 12 months — your $412K position has gained <strong style="color:var(--green)">₦76M in naira value</strong> without any active management.</div>
-          <div style="position:relative;height:180px"><canvas id="fxChart"></canvas></div>
-        </div>
-        <div class="card" style="background:var(--gold-dim);border-color:var(--gold-border)">
-          <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">FX Strategy Note</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.75">With 14% of your portfolio in USD, your FX exposure is at a healthy level. Given current CBN policy trajectory, maintaining or slightly increasing your dollar position provides continued protection against naira volatility. Consider adding £20,000–£30,000 GBP for further diversification.</div>
-        </div>
+        <div class="card"><div class="card-title">FX Impact — 12 Months</div><div style="position:relative;height:180px"><canvas id="fxChart"></canvas></div></div>
       </div>
 
       <!-- PROPERTIES -->
       <div class="dash-section" id="sec-properties">
-        <div class="section-header">
-          <div class="section-eyebrow">Real Estate</div>
-          <div class="section-title">Your Properties</div>
-          <div class="section-sub">Market valuations updated monthly</div>
-        </div>
-        <div class="prop-card">
-          <div class="prop-tag" style="background:rgba(201,168,76,0.1);color:var(--gold)">Residential</div>
-          <div class="prop-name">Ikoyi Waterfront Residence</div>
-          <div class="prop-loc">📍 Ikoyi, Lagos Island</div>
-          <div class="prop-stats">
-            <div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦620M</div></div>
-            <div><div class="prop-stat-label">Purchase Price</div><div class="prop-stat-val">₦380M</div></div>
-            <div><div class="prop-stat-label">Appreciation</div><div class="prop-stat-val" style="color:var(--green)">+63%</div></div>
-            <div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2019</div></div>
-          </div>
-        </div>
-        <div class="prop-card">
-          <div class="prop-tag" style="background:rgba(96,165,250,0.1);color:var(--blue)">Commercial</div>
-          <div class="prop-name">Victoria Island Office Block</div>
-          <div class="prop-loc">📍 Victoria Island, Lagos</div>
-          <div class="prop-stats">
-            <div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦410M</div></div>
-            <div><div class="prop-stat-label">Annual Rental</div><div class="prop-stat-val">₦28M</div></div>
-            <div><div class="prop-stat-label">Rental Yield</div><div class="prop-stat-val" style="color:var(--green)">6.8%</div></div>
-            <div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2021</div></div>
-          </div>
-        </div>
-        <div class="prop-card">
-          <div class="prop-tag" style="background:rgba(62,207,142,0.1);color:var(--green)">Land</div>
-          <div class="prop-name">Maitama Plot — 2 Hectares</div>
-          <div class="prop-loc">📍 Maitama, Abuja FCT</div>
-          <div class="prop-stats">
-            <div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦185M</div></div>
-            <div><div class="prop-stat-label">Appreciation</div><div class="prop-stat-val" style="color:var(--green)">+41%</div></div>
-            <div><div class="prop-stat-label">Title</div><div class="prop-stat-val" style="color:var(--gold)">Freehold</div></div>
-            <div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2022</div></div>
-          </div>
-        </div>
-        <div class="prop-card">
-          <div class="prop-tag" style="background:rgba(248,113,113,0.1);color:var(--red)">Commercial</div>
-          <div class="prop-name">Kano Warehouse Complex</div>
-          <div class="prop-loc">📍 Kano, Kano State</div>
-          <div class="prop-stats">
-            <div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦95M</div></div>
-            <div><div class="prop-stat-label">Use</div><div class="prop-stat-val">Active</div></div>
-            <div><div class="prop-stat-label">Appreciation</div><div class="prop-stat-val" style="color:var(--green)">+22%</div></div>
-            <div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2020</div></div>
-          </div>
-        </div>
-        <div class="card" style="background:var(--gold-dim);border-color:var(--gold-border)">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Total Real Estate</div><div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--text)">₦1.31B</div></div>
-            <div style="text-align:right"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Overall gain</div><div style="font-size:24px;font-weight:500;color:var(--green)">+48.6%</div></div>
-          </div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">Real Estate</div><div class="section-title">Your Properties</div><div class="section-sub">Market valuations updated monthly</div></div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(201,168,76,0.1);color:var(--gold)">Residential</div><div class="prop-name">Ikoyi Waterfront Residence</div><div class="prop-loc">📍 Ikoyi, Lagos</div><div class="prop-stats"><div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦620M</div></div><div><div class="prop-stat-label">Purchase Price</div><div class="prop-stat-val">₦380M</div></div><div><div class="prop-stat-label">Appreciation</div><div class="prop-stat-val" style="color:var(--green)">+63%</div></div><div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2019</div></div></div></div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(96,165,250,0.1);color:var(--blue)">Commercial</div><div class="prop-name">Victoria Island Office Block</div><div class="prop-loc">📍 VI, Lagos</div><div class="prop-stats"><div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦410M</div></div><div><div class="prop-stat-label">Annual Rental</div><div class="prop-stat-val">₦28M</div></div><div><div class="prop-stat-label">Yield</div><div class="prop-stat-val" style="color:var(--green)">6.8%</div></div><div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2021</div></div></div></div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(62,207,142,0.1);color:var(--green)">Land</div><div class="prop-name">Maitama Plot — 2 Hectares</div><div class="prop-loc">📍 Abuja, FCT</div><div class="prop-stats"><div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦185M</div></div><div><div class="prop-stat-label">Appreciation</div><div class="prop-stat-val" style="color:var(--green)">+41%</div></div><div><div class="prop-stat-label">Title</div><div class="prop-stat-val" style="color:var(--gold)">Freehold</div></div><div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2022</div></div></div></div>
+        <div class="prop-card"><div class="prop-tag" style="background:rgba(248,113,113,0.1);color:var(--red)">Commercial</div><div class="prop-name">Kano Warehouse Complex</div><div class="prop-loc">📍 Kano, Kano State</div><div class="prop-stats"><div><div class="prop-stat-label">Market Value</div><div class="prop-stat-val">₦95M</div></div><div><div class="prop-stat-label">Use</div><div class="prop-stat-val">Active</div></div><div><div class="prop-stat-label">Appreciation</div><div class="prop-stat-val" style="color:var(--green)">+22%</div></div><div><div class="prop-stat-label">Acquired</div><div class="prop-stat-val">2020</div></div></div></div>
+        <div class="card" style="background:var(--gold-dim);border-color:var(--gold-border)"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Total Real Estate</div><div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--text)">₦1.31B</div></div><div style="text-align:right"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Overall gain</div><div style="font-size:24px;font-weight:500;color:var(--green)">+48.6%</div></div></div></div>
       </div>
 
-      <!-- WHAT-IF SIMULATOR -->
+      <!-- SIMULATOR -->
       <div class="dash-section" id="sec-simulator">
-        <div class="section-header">
-          <div class="section-eyebrow">Scenario Planning</div>
-          <div class="section-title">What-If Simulator</div>
-          <div class="section-sub">See how market changes affect your net worth</div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">Scenario Planning</div><div class="section-title">What-If Simulator</div><div class="section-sub">See how market changes affect your net worth</div></div>
         <div class="simulator">
-          <div class="sim-title">Adjust the scenarios below</div>
-          <div class="sim-sub">Drag the sliders to see the impact on your ₦2.84B net worth in real time</div>
+          <div class="sim-title">Adjust the scenarios</div>
+          <div class="sim-sub">Drag sliders to see real-time impact on your net worth</div>
           <div class="sim-row">
-            <div class="sim-field">
-              <label>Naira depreciates by <span id="fxLabel">10</span>%</label>
-              <input type="range" class="sim-slider" id="fxSlider" min="-30" max="50" value="10" oninput="updateSimulator()">
-            </div>
-            <div class="sim-field">
-              <label>NSE equities change by <span id="nseLabel">+5</span>%</label>
-              <input type="range" class="sim-slider" id="nseSlider" min="-40" max="40" value="5" oninput="updateSimulator()">
-            </div>
-            <div class="sim-field">
-              <label>Property values change by <span id="propLabel">+8</span>%</label>
-              <input type="range" class="sim-slider" id="propSlider" min="-20" max="30" value="8" oninput="updateSimulator()">
-            </div>
-            <div class="sim-field">
-              <label>Interest rates change by <span id="rateLabel">+2</span>%</label>
-              <input type="range" class="sim-slider" id="rateSlider" min="-10" max="10" value="2" oninput="updateSimulator()">
-            </div>
+            <div class="sim-field"><label>Naira depreciates by <span id="fxLabel">10</span>%</label><input type="range" min="-30" max="50" value="10" oninput="updateSim()"></div>
+            <div class="sim-field"><label>NSE equities change <span id="nseLabel">+5</span>%</label><input type="range" id="nseSlider" min="-40" max="40" value="5" oninput="updateSim()"></div>
+            <div class="sim-field"><label>Property values change <span id="propLabel">+8</span>%</label><input type="range" id="propSlider" min="-20" max="30" value="8" oninput="updateSim()"></div>
+            <div class="sim-field"><label>Interest rates change <span id="rateLabel">+2</span>%</label><input type="range" id="rateSlider" min="-10" max="10" value="2" oninput="updateSim()"></div>
           </div>
           <div class="sim-result">
             <div class="sim-result-label">Projected Net Worth</div>
@@ -669,122 +467,71 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
             <div class="sim-result-diff" id="simDiff" style="color:var(--green)">▲ +₦180M from current</div>
           </div>
           <div class="sim-scenarios">
-            <div class="sim-scenario" onclick="applyScenario(-20,0,-10,0)">
-              <div class="sim-scenario-label">Naira crash</div>
-              <div class="sim-scenario-val" style="color:var(--red)">−20% FX</div>
-            </div>
-            <div class="sim-scenario" onclick="applyScenario(0,-30,0,0)">
-              <div class="sim-scenario-label">NSE bear market</div>
-              <div class="sim-scenario-val" style="color:var(--red)">−30% NSE</div>
-            </div>
-            <div class="sim-scenario" onclick="applyScenario(15,20,15,0)">
-              <div class="sim-scenario-label">Bull market</div>
-              <div class="sim-scenario-val" style="color:var(--green)">+15% everything</div>
-            </div>
+            <div class="sim-scenario" onclick="applyScenario(-20,0,-10,0)"><div class="sim-scenario-label">Naira crash</div><div class="sim-scenario-val" style="color:var(--red)">−20% FX</div></div>
+            <div class="sim-scenario" onclick="applyScenario(0,-30,0,0)"><div class="sim-scenario-label">NSE bear market</div><div class="sim-scenario-val" style="color:var(--red)">−30% NSE</div></div>
+            <div class="sim-scenario" onclick="applyScenario(15,20,15,0)"><div class="sim-scenario-label">Bull market</div><div class="sim-scenario-val" style="color:var(--green)">+15% all</div></div>
           </div>
         </div>
       </div>
 
-      <!-- VS INFLATION -->
+      <!-- INFLATION -->
       <div class="dash-section" id="sec-inflation">
-        <div class="section-header">
-          <div class="section-eyebrow">Performance Analysis</div>
-          <div class="section-title">Portfolio vs Inflation</div>
-          <div class="section-sub">How your wealth is growing relative to Nigeria's inflation rate</div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">Performance</div><div class="section-title">vs Inflation</div><div class="section-sub">How your wealth grows relative to Nigeria's inflation</div></div>
         <div class="metric-grid">
-          <div class="metric-card"><div class="metric-label">Your YTD Return</div><div class="metric-val" style="color:var(--green)">+4.2%</div><div class="metric-change" style="color:var(--green)">Nominal growth</div></div>
+          <div class="metric-card"><div class="metric-label">Your YTD Return</div><div class="metric-val" style="color:var(--green)">+4.2%</div><div class="metric-change">Nominal growth</div></div>
           <div class="metric-card"><div class="metric-label">Nigerian Inflation</div><div class="metric-val" style="color:var(--red)">~33%</div><div class="metric-change" style="color:var(--hint)">NBS estimate 2026</div></div>
           <div class="metric-card"><div class="metric-label">Real Return</div><div class="metric-val" style="color:var(--red)">−28.8%</div><div class="metric-change" style="color:var(--hint)">Inflation-adjusted</div></div>
         </div>
-        <div class="card" style="background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.2)">
-          <div style="font-size:11px;font-weight:500;color:var(--red);margin-bottom:8px">⚠️ Important Context</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.75">Your portfolio nominal value is growing, but at <strong style="color:var(--text)">+4.2% vs 33% inflation</strong>, your purchasing power is declining in real terms. To beat Nigerian inflation, your portfolio needs to generate returns above 33% annually. <strong style="color:var(--text)">This is why asset diversification and yield optimization matters.</strong></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Net Worth Growth vs Inflation — 12 Months</div>
-          <div class="inflation-legend">
-            <div class="inf-legend-item"><div class="inf-legend-dot" style="background:#C9A84C"></div>Your Net Worth</div>
-            <div class="inf-legend-item"><div class="inf-legend-dot" style="background:#F87171"></div>Inflation Rate</div>
-            <div class="inf-legend-item"><div class="inf-legend-dot" style="background:#60A5FA"></div>NSE ASI</div>
-          </div>
-          <div style="position:relative;height:220px"><canvas id="inflationChart"></canvas></div>
-        </div>
+        <div class="card"><div class="card-title">Net Worth vs Inflation — 12 Months</div><div class="inflation-legend"><div class="inf-legend-item"><div class="inf-legend-dot" style="background:#C9A84C"></div>Net Worth</div><div class="inf-legend-item"><div class="inf-legend-dot" style="background:#F87171"></div>Inflation</div><div class="inf-legend-item"><div class="inf-legend-dot" style="background:#60A5FA"></div>NSE ASI</div></div><div style="position:relative;height:220px"><canvas id="inflationChart"></canvas></div></div>
         <div class="card" style="background:var(--gold-dim);border-color:var(--gold-border)">
           <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">How to Beat Inflation</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.75">
-            1. <strong style="color:var(--text)">Move ₦200M from savings (8%) to T-bills (22.5%)</strong> — adds ₦29M/yr<br>
-            2. <strong style="color:var(--text)">Increase USD exposure</strong> — naira depreciation protects purchasing power<br>
-            3. <strong style="color:var(--text)">Deploy rental income into equities</strong> — VI office yields ₦28M/yr currently idle<br>
-            4. <strong style="color:var(--text)">Consider Eurobond allocation</strong> — dollar-denominated yield at 8–10%
-          </div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.75">1. <strong style="color:var(--text)">Move ₦200M to T-bills (22.5%)</strong> — adds ₦29M/yr<br>2. <strong style="color:var(--text)">Increase USD exposure</strong> — natural naira hedge<br>3. <strong style="color:var(--text)">Deploy rental income into equities</strong> — VI office yields ₦28M/yr<br>4. <strong style="color:var(--text)">Consider Eurobond allocation</strong> — 8–10% dollar yield</div>
         </div>
       </div>
 
-      <!-- WEALTH DIGEST -->
+      <!-- DIGEST -->
       <div class="dash-section" id="sec-digest">
-        <div class="section-header">
-          <div class="section-eyebrow">Weekly Reports</div>
-          <div class="section-title">Wealth Digest</div>
-          <div class="section-sub">Your weekly portfolio summary from the NetWize team</div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">Weekly Reports</div><div class="section-title">Wealth Digest</div><div class="section-sub">Your weekly summary from the NetWize team</div></div>
         <div class="digest-item" onclick="toggleDigest(this)">
           <div class="digest-item-top"><div class="digest-week">Week 11 · March 2026</div><div class="digest-date">17 Mar 2026</div></div>
-          <div class="digest-nw-change"><div class="digest-nw-val">₦2.84B</div><div class="digest-nw-diff" style="color:var(--green)">▲ +₦38M</div></div>
-          <div class="digest-insight-preview">Strong week — NSE equities led by DANGCEM +3.2%. T-bill opportunity still open at 22.5%...</div>
-          <div class="digest-expanded">
-            <div class="digest-insight-full">Your portfolio had a strong week driven primarily by NSE equity positions. <strong>Dangote Cement gained 3.2%</strong> contributing ₦2.6M. <strong>MTN Nigeria added 2.4%</strong> gaining ₦1.3M. Your <strong>USD balance appreciated in naira terms</strong> as the exchange rate moved from 1,630 to 1,642 — adding approximately ₦5M in naira equivalent value.<br><br>The ₦480M in your Zenith savings continues to earn 8% annually. <strong>Current T-bill rate is 22.5%.</strong> Moving ₦200M would generate an extra ₦29M per year.</div>
-            <div class="digest-action"><strong>This week's recommendation:</strong> Consider rolling ₦150M–₦200M from your Zenith savings into 91-day Treasury Bills at the next CBN auction. Reply to private@netwize.live to discuss.</div>
-          </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><div class="digest-nw-val">₦2.84B</div><div class="digest-nw-diff" style="color:var(--green)">▲ +₦38M</div></div>
+          <div class="digest-insight-preview">Strong week — DANGCEM +3.2%, USD hedge gained ₦5M. T-bill opportunity still open at 22.5%...</div>
+          <div class="digest-expanded">Your portfolio had a strong week. <strong>Dangote Cement gained 3.2%</strong> contributing ₦2.6M. Your <strong>USD balance appreciated</strong> as the rate moved from 1,630 to 1,642 — adding ₦5M in naira value.<br><br>The ₦480M in Zenith savings earns 8% annually. <strong>Current T-bill rate is 22.5%.</strong> Moving ₦200M generates an extra ₦29M per year.
+          <div class="digest-action"><strong>This week's recommendation:</strong> Roll ₦150M–₦200M from Zenith savings into 91-day T-bills at the next CBN auction. Reply to private@netwize.live to discuss.</div></div>
         </div>
         <div class="digest-item" onclick="toggleDigest(this)">
           <div class="digest-item-top"><div class="digest-week">Week 10 · March 2026</div><div class="digest-date">10 Mar 2026</div></div>
-          <div class="digest-nw-change"><div class="digest-nw-val">₦2.80B</div><div class="digest-nw-diff" style="color:var(--green)">▲ +₦22M</div></div>
-          <div class="digest-insight-preview">Steady growth. Real estate valuations updated — Ikoyi property up 8% since last review...</div>
-          <div class="digest-expanded">
-            <div class="digest-insight-full">A steady week with the highlight being a <strong>real estate valuation update</strong>. Comparable properties in Ikoyi transacted at ₦650M–₦680M, suggesting your Ikoyi Waterfront may be conservatively valued. <strong>You could be undervalued by ₦30M–₦60M.</strong></div>
-            <div class="digest-action"><strong>This week's recommendation:</strong> If you plan to sell the Ikoyi property in the next 12 months, commission a fresh valuation report to capture the appreciation for refinancing or estate planning purposes.</div>
-          </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><div class="digest-nw-val">₦2.80B</div><div class="digest-nw-diff" style="color:var(--green)">▲ +₦22M</div></div>
+          <div class="digest-insight-preview">Steady growth. Ikoyi property up 8% since last review. Comparable properties at ₦680M...</div>
+          <div class="digest-expanded">Steady week with highlight being a <strong>real estate valuation update</strong>. Comparable Ikoyi properties transacting at ₦650M–₦680M. <strong>You may be undervalued by ₦30M–₦60M.</strong>
+          <div class="digest-action"><strong>This week's recommendation:</strong> Commission a fresh valuation report if you plan to sell or refinance the Ikoyi property in the next 12 months.</div></div>
         </div>
         <div class="digest-item" onclick="toggleDigest(this)">
           <div class="digest-item-top"><div class="digest-week">Week 9 · February 2026</div><div class="digest-date">24 Feb 2026</div></div>
-          <div class="digest-nw-change"><div class="digest-nw-val">₦2.78B</div><div class="digest-nw-diff" style="color:var(--green)">▲ +₦45M</div></div>
-          <div class="digest-insight-preview">Best week of the year. FX gains drove majority of increase as naira weakened...</div>
-          <div class="digest-expanded">
-            <div class="digest-insight-full">Your <strong>best performing week of 2026</strong>, driven by FX movements. The naira weakened from 1,595 to 1,630 — a 2.2% move that added approximately <strong>₦26M in naira equivalent value</strong> to your $412K domiciliary balance without any action required.</div>
-            <div class="digest-action"><strong>This week's recommendation:</strong> Your USD hedge is working well. Consider adding $20,000–$30,000 to your GTBank domiciliary account during any naira strengthening periods.</div>
-          </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><div class="digest-nw-val">₦2.78B</div><div class="digest-nw-diff" style="color:var(--green)">▲ +₦45M</div></div>
+          <div class="digest-insight-preview">Best week of the year. FX gains drove majority of increase as naira weakened 2.2%...</div>
+          <div class="digest-expanded">Your <strong>best week of 2026</strong>. Naira weakened from 1,595 to 1,630 — adding approximately <strong>₦26M in naira value</strong> to your $412K balance without any action.
+          <div class="digest-action"><strong>This week's recommendation:</strong> Consider adding $20K–$30K to your GTBank domiciliary account during naira strengthening periods.</div></div>
         </div>
       </div>
 
-      <!-- AI CHAT -->
+      <!-- AI -->
       <div class="dash-section" id="sec-ai">
-        <div class="section-header">
-          <div class="section-eyebrow">AI Assistant</div>
-          <div class="section-title">NetWize AI</div>
-          <div class="section-sub">Ask anything about your portfolio</div>
-        </div>
+        <div class="section-header"><div class="section-eyebrow">AI Assistant</div><div class="section-title">NetWize AI</div><div class="section-sub">Ask anything about your portfolio</div></div>
         <div class="ai-chat-container">
-          <div class="ai-chat-header">
-            <div class="ai-status-dot"></div>
-            <div class="ai-chat-title">NetWize AI — Private Wealth Intelligence</div>
-            <div class="ai-chat-sub">Powered by your portfolio data</div>
-          </div>
+          <div class="ai-chat-header"><div class="ai-status-dot"></div><div class="ai-chat-title">NetWize AI — Private Wealth Intelligence</div><div class="ai-chat-sub">Powered by your data</div></div>
           <div class="ai-messages" id="aiMessages">
-            <div class="msg-bot">Good morning. I have full visibility into your portfolio — <strong>₦2.84B net worth</strong> as of today, up ₦38M this week. Your strongest performers are your <span class="gold">NSE equities (+₦11M)</span> and <span class="gold">USD holdings (+₦5M in naira terms)</span>. What would you like to explore?</div>
+            <div class="msg-bot">Good morning. I have full visibility into your portfolio — <strong>₦2.84B net worth</strong>, up ₦38M this week. Your strongest performers are <span class="gold">DANGCEM (+3.2%)</span> and your <span class="gold">USD holdings (+₦5M)</span>. What would you like to explore?</div>
           </div>
           <div class="ai-quick-prompts">
             <button class="ai-quick-btn" onclick="sendAI('How should I rebalance my portfolio?')">Rebalance advice</button>
-            <button class="ai-quick-btn" onclick="sendAI('What is my biggest financial risk right now?')">Biggest risk</button>
-            <button class="ai-quick-btn" onclick="sendAI('Where should I deploy ₦100M right now in Nigeria?')">Deploy ₦100M</button>
-            <button class="ai-quick-btn" onclick="sendAI('How can I beat Nigerian inflation with my current portfolio?')">Beat inflation</button>
-            <button class="ai-quick-btn" onclick="sendAI('What is my real return after inflation?')">Real return</button>
+            <button class="ai-quick-btn" onclick="sendAI('What is my biggest financial risk?')">Biggest risk</button>
+            <button class="ai-quick-btn" onclick="sendAI('Where should I deploy ₦100M right now?')">Deploy ₦100M</button>
+            <button class="ai-quick-btn" onclick="sendAI('How can I beat Nigerian inflation?')">Beat inflation</button>
           </div>
           <div class="ai-input-row">
             <input class="ai-input" id="aiInput" type="text" placeholder="Ask anything about your portfolio..." onkeydown="if(event.key==='Enter')sendAI()">
-            <button class="ai-send" onclick="sendAI()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0B" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
-            </button>
+            <button class="ai-send" onclick="sendAI()"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0B" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg></button>
           </div>
         </div>
       </div>
@@ -800,246 +547,230 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
     <div class="mobile-nav-item" onclick="showSection('digest',this,true)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><span>Digest</span></div>
     <div class="mobile-nav-item" onclick="showSection('ai',this,true)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>AI</span></div>
   </div>
-
 </div>
 
 <script>
-// CLIENT DATA
-const CLIENTS = {
-  '247365': { name: 'Alhaji Emeka', initials: 'AE', netWorth: '2.84B', weeklyChange: '▲ +₦38M this week', ytd: '▲ +4.2% YTD', liquid: '₦892M', usd: '$412K', realEstate: '₦1.31B', whatsapp: '2348000000000' },
-  '112233': { name: 'Demo Client', initials: 'DC', netWorth: '1.20B', weeklyChange: '▲ +₦12M this week', ytd: '▲ +2.8% YTD', liquid: '₦340M', usd: '$185K', realEstate: '₦620M', whatsapp: '2348000000000' }
-};
+const SUPABASE_URL = 'https://ebkixbivzrrokmdlsxmm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVia2l4Yml2enJyb2ttZGxzeG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODU0NzQsImV4cCI6MjA4OTM2MTQ3NH0.uSamgJI2MeqZzgjBtFCJPqONKjlRq4J5fSSOOHPusaQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// PIN
 let currentPin = '';
-const PIN_LENGTH = 6;
 let activeClient = null;
+const PIN_LEN = 6;
 
-function pinInput(digit) {
-  if (currentPin.length >= PIN_LENGTH) return;
-  currentPin += digit;
-  updatePinDisplay();
-  if (currentPin.length === PIN_LENGTH) setTimeout(checkPin, 150);
+// ── PIN INPUT ──
+function pinInput(d) {
+  if (currentPin.length >= PIN_LEN) return;
+  currentPin += d;
+  updateDots();
+  if (currentPin.length === PIN_LEN) setTimeout(verifyPin, 150);
 }
 function pinDelete() {
-  currentPin = currentPin.slice(0, -1);
-  updatePinDisplay();
+  currentPin = currentPin.slice(0,-1);
+  updateDots();
   document.getElementById('pinError').textContent = '';
 }
-function updatePinDisplay() {
-  for (let i = 0; i < PIN_LENGTH; i++) {
-    const dot = document.getElementById('dot-' + i);
-    dot.classList.toggle('filled', i < currentPin.length);
-    dot.classList.remove('error');
+function updateDots() {
+  for (let i = 0; i < PIN_LEN; i++) {
+    const d = document.getElementById('dot-' + i);
+    d.classList.toggle('filled', i < currentPin.length);
+    d.classList.remove('error');
   }
 }
-function checkPin() {
-  const client = CLIENTS[currentPin];
-  if (client) {
-    activeClient = client;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashboard').classList.add('visible');
-    loadClientData(client);
-    initCharts();
-  } else {
-    for (let i = 0; i < PIN_LENGTH; i++) document.getElementById('dot-' + i).classList.add('error');
-    document.getElementById('pinError').textContent = 'Incorrect PIN. Please try again.';
-    setTimeout(() => { currentPin = ''; updatePinDisplay(); }, 1000);
+
+// ── VERIFY PIN AGAINST SUPABASE ──
+async function verifyPin() {
+  document.getElementById('pinChecking').style.display = 'block';
+  document.getElementById('pinError').textContent = '';
+
+  try {
+    // Get all active clients
+    const { data, error } = await sb.from('clients').select('*').eq('is_active', true);
+    if (error) throw error;
+
+    // Check PIN against each client's hash
+    let matched = null;
+    for (const client of data) {
+      if (!client.pin_hash) continue;
+      // Try matching with their setup token (used during creation)
+      // We need to try hashing with the USED_ token
+      const usedToken = client.setup_token.replace('USED_', '');
+      const hash = await hashPin(currentPin, usedToken);
+      if (hash === client.pin_hash) {
+        matched = client;
+        break;
+      }
+    }
+
+    document.getElementById('pinChecking').style.display = 'none';
+
+    if (matched) {
+      activeClient = matched;
+      loadDashboard(matched);
+    } else {
+      // Wrong PIN
+      for (let i = 0; i < PIN_LEN; i++) document.getElementById('dot-' + i).classList.add('error');
+      document.getElementById('pinError').textContent = 'Incorrect PIN. Please try again.';
+      setTimeout(() => { currentPin = ''; updateDots(); }, 1000);
+    }
+  } catch(e) {
+    document.getElementById('pinChecking').style.display = 'none';
+    document.getElementById('pinError').textContent = 'Connection error. Please try again.';
+    currentPin = ''; updateDots();
   }
 }
-function loadClientData(client) {
-  document.getElementById('clientNameDisplay').textContent = client.name;
-  document.getElementById('clientAvatar').textContent = client.initials;
-  document.getElementById('overview-greeting').textContent = 'Good morning, ' + client.name.split(' ').pop() + '.';
-  document.getElementById('client-nw').textContent = client.netWorth;
-  document.getElementById('nw-weekly').textContent = client.weeklyChange;
-  document.getElementById('nw-ytd').textContent = client.ytd;
-  document.getElementById('metric-liquid').textContent = client.liquid;
-  document.getElementById('metric-usd').textContent = client.usd;
-  document.getElementById('metric-re').textContent = client.realEstate;
+
+async function hashPin(pin, token) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin + token);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function loadDashboard(client) {
+  // Load client data
+  const firstName = client.name.split(' ')[0];
+  const initials = client.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+
+  document.getElementById('clientNameDisplay').textContent = firstName;
+  document.getElementById('clientAvatar').textContent = initials;
+  document.getElementById('overview-greeting').textContent = 'Good morning, ' + firstName + '.';
+  document.getElementById('client-nw').textContent = client.net_worth || '—';
+  document.getElementById('nw-weekly').textContent = '▲ +₦38M this week';
+  document.getElementById('nw-ytd').textContent = '▲ +4.2% YTD';
+
   const today = new Date();
-  document.getElementById('overview-date').textContent = today.toLocaleDateString('en-NG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  document.getElementById('nw-date').textContent = 'As of ' + today.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
-  document.getElementById('waLink').href = 'https://wa.me/' + client.whatsapp + '?text=Hi%20NetWize%20team%2C%20I%27d%20like%20to%20discuss%20my%20portfolio.';
+  document.getElementById('overview-date').textContent = today.toLocaleDateString('en-NG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('nw-date').textContent = 'As of ' + today.toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'numeric' });
+
+  // Set metrics based on tier
+  document.getElementById('metric-liquid').textContent = '₦892M';
+  document.getElementById('metric-usd').textContent = '$412K';
+  document.getElementById('metric-re').textContent = '₦1.31B';
+
+  // Show dashboard
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').classList.add('visible');
+  initCharts();
 }
+
 function logout() {
-  currentPin = ''; activeClient = null; updatePinDisplay();
+  currentPin = ''; activeClient = null; updateDots();
   document.getElementById('pinError').textContent = '';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('dashboard').classList.remove('visible');
 }
 
-// NAVIGATION
+// ── NAVIGATION ──
 function showSection(name, el, isMobile = false) {
   document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + name).classList.add('active');
-  if (isMobile) {
-    document.querySelectorAll('.mobile-nav-item').forEach(i => i.classList.remove('active'));
-  } else {
-    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  }
+  if (isMobile) { document.querySelectorAll('.mobile-nav-item').forEach(i => i.classList.remove('active')); }
+  else { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); }
   el.classList.add('active');
 }
 
-// THEME
+// ── THEME ──
 function toggleTheme() {
   const html = document.documentElement;
   html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   setTimeout(initCharts, 100);
 }
 
-// DIGEST
+// ── DIGEST ──
 function toggleDigest(el) { el.querySelector('.digest-expanded').classList.toggle('show'); }
 
-// PDF DOWNLOAD
+// ── SIMULATOR ──
+function updateSim() {
+  const fx = parseInt(document.querySelector('#sec-simulator input:nth-child(1)').value || 10);
+  const nse = parseInt(document.getElementById('nseSlider').value);
+  const prop = parseInt(document.getElementById('propSlider').value);
+  const rate = parseInt(document.getElementById('rateSlider').value);
+  document.getElementById('fxLabel').textContent = fx;
+  document.getElementById('nseLabel').textContent = (nse>=0?'+':'') + nse;
+  document.getElementById('propLabel').textContent = (prop>=0?'+':'') + prop;
+  document.getElementById('rateLabel').textContent = (rate>=0?'+':'') + rate;
+  const base = 2840;
+  const diff = Math.round(676*(fx/100) + 280*(nse/100) + 1310*(prop/100) + 970*(rate/100)*0.5);
+  const total = base + diff;
+  document.getElementById('simResult').textContent = '₦' + (total/1000).toFixed(2) + 'B';
+  document.getElementById('simDiff').textContent = (diff>=0?'▲ +₦':'▼ −₦') + Math.abs(diff) + 'M from current';
+  document.getElementById('simDiff').style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+}
+function applyScenario(fx, nse, prop, rate) {
+  document.querySelectorAll('#sec-simulator input[type=range]')[0].value = fx;
+  document.getElementById('nseSlider').value = nse;
+  document.getElementById('propSlider').value = prop;
+  document.getElementById('rateSlider').value = rate;
+  updateSim();
+}
+
+// ── PDF ──
 function downloadPDF() {
   const name = activeClient ? activeClient.name : 'Client';
-  const content = `NETWIZE — PRIVATE WEALTH REPORT\n${'='.repeat(50)}\n\nClient: ${name}\nDate: ${new Date().toLocaleDateString('en-NG', { dateStyle: 'full' })}\n\n${'─'.repeat(50)}\nNET WORTH SUMMARY\n${'─'.repeat(50)}\n\nTotal Net Worth:         ₦2,840,000,000\nWeek Change:             +₦38,000,000 (+1.36%)\nYear-to-Date:            +4.2%\n\n${'─'.repeat(50)}\nASSET BREAKDOWN\n${'─'.repeat(50)}\n\nReal Estate:             ₦1,310,000,000   (34%)\nBank Deposits:           ₦970,000,000     (24%)\nNSE Equities:            ₦280,000,000     (18%)\nFX Holdings:             ₦676,000,000     (14%)\nBusiness Stakes:         ₦285,000,000     (10%)\n\n${'─'.repeat(50)}\nBANK ACCOUNTS\n${'─'.repeat(50)}\n\nGTBank Private (USD):    $412,000\nZenith Premier (NGN):    ₦480,000,000\nStanbic IBTC (NGN):      ₦290,000,000\nAccess Private (NGN):    ₦200,000,000\n\n${'─'.repeat(50)}\nFX RATES\n${'─'.repeat(50)}\n\nUSD/NGN:                 1,642\nGBP/NGN:                 2,080\nEUR/NGN:                 1,790\n\n${'─'.repeat(50)}\nKEY INSIGHT\n${'─'.repeat(50)}\n\nYour Zenith savings (₦480M) earns 8% p.a.\nCurrent T-bill rate: 22.5%\nOpportunity: Moving ₦200M saves ₦29M/year\n\n${'─'.repeat(50)}\n\nThis report is strictly confidential and protected\nunder your NetWize Non-Disclosure Agreement.\n\nNetWize Private Wealth Intelligence\nprivate@netwize.live · netwize.live\n`;
-  const blob = new Blob([content], { type: 'text/plain' });
+  const nw = activeClient ? activeClient.net_worth : '—';
+  const content = `NETWIZE — PRIVATE WEALTH REPORT\n${'='.repeat(50)}\n\nClient: ${name}\nTier: ${activeClient?.tier || 'Private'}\nDate: ${new Date().toLocaleDateString('en-NG', {dateStyle:'full'})}\n\n${'─'.repeat(50)}\nNET WORTH SUMMARY\n${'─'.repeat(50)}\n\nTotal Net Worth:     ${nw}\nWeek Change:         +₦38,000,000 (+1.36%)\nYear-to-Date:        +4.2%\n\n${'─'.repeat(50)}\nASSET BREAKDOWN\n${'─'.repeat(50)}\n\nReal Estate:         ₦1,310,000,000  (34%)\nBank Deposits:       ₦970,000,000    (24%)\nNSE Equities:        ₦280,000,000    (18%)\nFX Holdings:         ₦676,000,000    (14%)\nBusiness Stakes:     ₦285,000,000    (10%)\n\n${'─'.repeat(50)}\nKEY OPPORTUNITY\n${'─'.repeat(50)}\n\nZenith savings (₦480M) at 8% p.a.\nT-bill rate: 22.5%\nMoving ₦200M saves ₦29M/year\n\n${'─'.repeat(50)}\n\nConfidential — Protected under NetWize NDA\nNetWize Private Wealth Intelligence\nprivate@netwize.live · netwize.live\n`;
+  const blob = new Blob([content], {type:'text/plain'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'NetWize-Report-' + new Date().toISOString().slice(0,10) + '.txt';
   a.click();
 }
 
-// SIMULATOR
-function updateSimulator() {
-  const fx = parseInt(document.getElementById('fxSlider').value);
-  const nse = parseInt(document.getElementById('nseSlider').value);
-  const prop = parseInt(document.getElementById('propSlider').value);
-  const rate = parseInt(document.getElementById('rateSlider').value);
-  document.getElementById('fxLabel').textContent = fx > 0 ? fx : fx;
-  document.getElementById('nseLabel').textContent = (nse >= 0 ? '+' : '') + nse;
-  document.getElementById('propLabel').textContent = (prop >= 0 ? '+' : '') + prop;
-  document.getElementById('rateLabel').textContent = (rate >= 0 ? '+' : '') + rate;
-  const baseNW = 2840;
-  const fxImpact = 676 * (fx / 100);
-  const nseImpact = 280 * (nse / 100);
-  const propImpact = 1310 * (prop / 100);
-  const rateImpact = 970 * (rate / 100) * 0.5;
-  const total = baseNW + fxImpact + nseImpact + propImpact + rateImpact;
-  const diff = total - baseNW;
-  document.getElementById('simResult').textContent = '₦' + (total / 1000).toFixed(2) + 'B';
-  document.getElementById('simDiff').textContent = (diff >= 0 ? '▲ +₦' : '▼ −₦') + Math.abs(Math.round(diff)) + 'M from current';
-  document.getElementById('simDiff').style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
-}
-function applyScenario(fx, nse, prop, rate) {
-  document.getElementById('fxSlider').value = fx;
-  document.getElementById('nseSlider').value = nse;
-  document.getElementById('propSlider').value = prop;
-  document.getElementById('rateSlider').value = rate;
-  updateSimulator();
-}
-
-// CHARTS
+// ── CHARTS ──
 function initCharts() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const tc = isDark ? '#383634' : '#aaa';
   const gc = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)';
+  ['trendChart','equityChart','fxChart','inflationChart'].forEach(id => { const c = Chart.getChart(id); if(c) c.destroy(); });
 
-  // Destroy existing
-  ['trendChart','equityChart','fxChart','inflationChart'].forEach(id => {
-    const inst = Chart.getChart(id);
-    if (inst) inst.destroy();
-  });
-
-  // 12 MONTH TREND
+  // TREND
   new Chart(document.getElementById('trendChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
-      datasets: [{
-        data: [2100,2150,2200,2280,2350,2280,2310,2450,2520,2690,2780,2840],
-        borderColor: '#C9A84C', borderWidth: 2.5,
-        pointBackgroundColor: '#C9A84C', pointRadius: 3,
-        tension: 0.4, fill: true,
-        backgroundColor: (ctx) => { const g = ctx.chart.ctx.createLinearGradient(0,0,0,220); g.addColorStop(0,'rgba(201,168,76,0.18)'); g.addColorStop(1,'rgba(201,168,76,0)'); return g; }
-      }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{backgroundColor:isDark?'#1E1E1C':'#fff',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:isDark?'#F2EDE4':'#1a1916',callbacks:{label:v=>'₦'+v.raw+'M'}} }, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'₦'+v+'M'},min:2000,max:2950} } }
+    type:'line', data:{ labels:['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'], datasets:[{ data:[2100,2150,2200,2280,2350,2280,2310,2450,2520,2690,2780,2840], borderColor:'#C9A84C', borderWidth:2.5, pointBackgroundColor:'#C9A84C', pointRadius:3, tension:0.4, fill:true, backgroundColor:(ctx)=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,220); g.addColorStop(0,'rgba(201,168,76,0.18)'); g.addColorStop(1,'rgba(201,168,76,0)'); return g; } }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'#1E1E1C':'#fff',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:isDark?'#F2EDE4':'#1a1916',callbacks:{label:v=>'₦'+v.raw+'M'}}}, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'₦'+v+'M'},min:2000,max:2950} } }
   });
 
-  // EQUITY CHART
+  // EQUITY
   new Chart(document.getElementById('equityChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
-      datasets: [
-        { label: 'Your Portfolio', data: [100,103,108,112,115,110,113,122,128,136,140,142], borderColor:'#C9A84C', borderWidth:2, pointRadius:2, tension:0.4, fill:false },
-        { label: 'NSE ASI', data: [100,101,104,106,108,104,106,110,112,116,118,108], borderColor:'#60A5FA', borderWidth:2, pointRadius:2, tension:0.4, fill:false, borderDash:[4,4] }
-      ]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{backgroundColor:isDark?'#1E1E1C':'#fff',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:isDark?'#F2EDE4':'#1a1916',callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}} }, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},min:90,max:150} } }
+    type:'line', data:{ labels:['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'], datasets:[ {label:'Your Portfolio',data:[100,103,108,112,115,110,113,122,128,136,140,142],borderColor:'#C9A84C',borderWidth:2,pointRadius:2,tension:0.4,fill:false}, {label:'NSE ASI',data:[100,101,104,106,108,104,106,110,112,116,118,108],borderColor:'#60A5FA',borderWidth:2,pointRadius:2,tension:0.4,fill:false,borderDash:[4,4]} ] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},min:90,max:150} } }
   });
 
-  // FX CHART
+  // FX
   new Chart(document.getElementById('fxChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
-      datasets: [{ data: [1390,1420,1460,1510,1555,1520,1580,1600,1595,1620,1630,1642], borderColor:'#F87171', borderWidth:2, pointRadius:2, tension:0.4, fill:true, backgroundColor:'rgba(248,113,113,0.05)' }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{backgroundColor:isDark?'#1E1E1C':'#fff',borderColor:'rgba(248,113,113,0.3)',borderWidth:1,titleColor:'#F87171',bodyColor:isDark?'#F2EDE4':'#1a1916',callbacks:{label:v=>'₦'+v.raw+' per $1'}} }, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'₦'+v},min:1300,max:1700} } }
+    type:'line', data:{ labels:['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'], datasets:[{data:[1390,1420,1460,1510,1555,1520,1580,1600,1595,1620,1630,1642],borderColor:'#F87171',borderWidth:2,pointRadius:2,tension:0.4,fill:true,backgroundColor:'rgba(248,113,113,0.05)'}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>'₦'+v.raw+' per $1'}}}, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'₦'+v},min:1300,max:1700} } }
   });
 
-  // INFLATION CHART
+  // INFLATION
   new Chart(document.getElementById('inflationChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
-      datasets: [
-        { label: 'Net Worth', data: [100,102,105,108,112,108,110,117,121,128,132,135], borderColor:'#C9A84C', borderWidth:2.5, pointRadius:2, tension:0.4, fill:false },
-        { label: 'Inflation', data: [100,102,105,108,112,115,119,122,126,129,131,133], borderColor:'#F87171', borderWidth:2, pointRadius:2, tension:0.4, fill:false, borderDash:[4,4] },
-        { label: 'NSE ASI', data: [100,101,104,106,108,104,106,110,112,116,118,108], borderColor:'#60A5FA', borderWidth:1.5, pointRadius:2, tension:0.4, fill:false, borderDash:[2,4] }
-      ]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{backgroundColor:isDark?'#1E1E1C':'#fff',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:isDark?'#F2EDE4':'#1a1916',callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+' (indexed)'}} }, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v},min:90,max:145} } }
+    type:'line', data:{ labels:['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'], datasets:[ {label:'Net Worth',data:[100,102,105,108,112,108,110,117,121,128,132,135],borderColor:'#C9A84C',borderWidth:2.5,pointRadius:2,tension:0.4,fill:false}, {label:'Inflation',data:[100,102,105,108,112,115,119,122,126,129,131,133],borderColor:'#F87171',borderWidth:2,pointRadius:2,tension:0.4,fill:false,borderDash:[4,4]}, {label:'NSE ASI',data:[100,101,104,106,108,104,106,110,112,116,118,108],borderColor:'#60A5FA',borderWidth:1.5,pointRadius:2,tension:0.4,fill:false,borderDash:[2,4]} ] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}, y:{grid:{color:gc},ticks:{color:tc,font:{size:10}},min:90,max:145} } }
   });
 }
 
-// AI CHAT
-const PORTFOLIO_CONTEXT = `You are NetWize AI, a private wealth intelligence assistant. Advising a client with:
-- Total Net Worth: ₦2.84 billion (up ₦38M this week, +4.2% YTD)
-- Bank Deposits: GTBank USD $412K, Zenith NGN ₦480M at 8% p.a., Stanbic ₦290M, Access ₦200M
-- Real Estate: Ikoyi ₦620M (+63%), VI office ₦410M (6.8% yield), Maitama plot ₦185M, Kano warehouse ₦95M
-- NSE Equities: DANGCEM ₦82M, GTCO ₦64M, AIRTELAFRI ₦78M, MTNN ₦56M — total ₦280M
-- FX: USD/NGN 1,642 | GBP/NGN 2,080 | Nigerian inflation ~33% | T-bill rate 22.5%
-Give clear, specific, actionable advice. 3-5 sentences max. No markdown. Speak directly to client.`;
+// ── AI ──
+const AI_CONTEXT = `You are NetWize AI, a private wealth intelligence assistant for high-net-worth Nigerians. Portfolio: Total Net Worth ₦2.84B (+₦38M this week), Bank deposits ₦970M + $412K USD, Real estate ₦1.31B (Ikoyi ₦620M, VI office ₦410M 6.8% yield, Abuja plot ₦185M, Kano warehouse ₦95M), NSE equities ₦280M (DANGCEM, GTCO, AIRTELAFRI, MTNN), FX: USD/NGN 1642. T-bill rate 22.5%, inflation ~33%. Give clear direct actionable advice. 3-5 sentences max. No markdown. Speak directly to client.`;
 
 async function sendAI(preset) {
   const input = document.getElementById('aiInput');
-  const question = preset || input.value.trim();
-  if (!question) return;
+  const q = preset || input.value.trim();
+  if (!q) return;
   input.value = '';
-  const messages = document.getElementById('aiMessages');
-  const userMsg = document.createElement('div');
-  userMsg.className = 'msg-user';
-  userMsg.textContent = question;
-  messages.appendChild(userMsg);
-  const typing = document.createElement('div');
-  typing.className = 'ai-typing';
-  typing.innerHTML = '<span></span><span></span><span></span>';
-  messages.appendChild(typing);
-  messages.scrollTop = messages.scrollHeight;
+  const msgs = document.getElementById('aiMessages');
+  const um = document.createElement('div'); um.className = 'msg-user'; um.textContent = q; msgs.appendChild(um);
+  const typing = document.createElement('div'); typing.className = 'ai-typing'; typing.innerHTML = '<span></span><span></span><span></span>'; msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:PORTFOLIO_CONTEXT, messages:[{role:'user',content:question}] })
-    });
+    const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:AI_CONTEXT,messages:[{role:'user',content:q}]}) });
     const data = await res.json();
     typing.remove();
-    const botMsg = document.createElement('div');
-    botMsg.className = 'msg-bot';
-    botMsg.textContent = data.content[0].text;
-    messages.appendChild(botMsg);
+    const bm = document.createElement('div'); bm.className = 'msg-bot'; bm.textContent = data.content[0].text; msgs.appendChild(bm);
   } catch {
     typing.remove();
-    const botMsg = document.createElement('div');
-    botMsg.className = 'msg-bot';
-    botMsg.textContent = 'Based on your current portfolio, your most immediate opportunity is the T-bill yield gap. Moving ₦200M from your Zenith savings at 8% to T-bills at 22.5% generates an extra ₦29M per year with zero additional risk.';
-    messages.appendChild(botMsg);
+    const bm = document.createElement('div'); bm.className = 'msg-bot'; bm.textContent = 'Based on your portfolio, your most immediate opportunity is moving ₦200M from Zenith savings at 8% to T-bills at 22.5% — this generates ₦29M extra per year with zero additional risk.'; msgs.appendChild(bm);
   }
-  messages.scrollTop = messages.scrollHeight;
+  msgs.scrollTop = msgs.scrollHeight;
 }
 </script>
 </body>
