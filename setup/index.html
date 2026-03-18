@@ -162,7 +162,7 @@ body { min-height: 100vh; display: flex; align-items: center; justify-content: c
     <div class="error-card">
       <div style="font-size:36px;margin-bottom:16px">⚠️</div>
       <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:8px">Invalid Link</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7">This setup link is invalid or has already been used. Contact your NetWize advisor for a new link.<br><br><a href="mailto:private@netwize.live" style="color:var(--gold)">private@netwize.live</a></div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">This setup link is invalid or has already been used. Contact your NetWize advisor for a new link.<br><br><a href="/cdn-cgi/l/email-protection#7505071c03140110351b1001021c0f105b191c0310" style="color:var(--gold)"><span class="__cf_email__" data-cfemail="e393918a95829786a38d8697948a9986cd8f8a9586">[email&#160;protected]</span></a></div>
     </div>
   </div>
 
@@ -297,7 +297,7 @@ body { min-height: 100vh; display: flex; align-items: center; justify-content: c
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── CONFIG ──
 const SUPABASE_URL = 'https://ebkixbivzrrokmdlsxmm.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVia2l4Yml2enJyb2ttZGxzeG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODU0NzQsImV4cCI6MjA4OTM2MTQ3NH0.uSamgJI2MeqZzgjBtFCJPqONKjlRq4J5fSSOOHPusaQ';
@@ -305,7 +305,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 emailjs.init('6VbbKlW1vXpj62zGX');
 
 const EMAILJS_SERVICE = 'service_0grs9ea';
-const EMAILJS_OTP_TEMPLATE = 'template_5qivgej'; // We'll use same template, just pass OTP as message
+const EMAILJS_OTP_TEMPLATE = 'template_jxf0vpq';
 
 // ── STATE ──
 let setupToken = '';
@@ -381,11 +381,10 @@ async function sendOTP() {
 
   try {
     await emailjs.send(EMAILJS_SERVICE, EMAILJS_OTP_TEMPLATE, {
-      from_name: clientData.name,
-      phone: phone,
-      referral: 'NetWize Email Verification Code: ' + generatedOTP + ' — Valid for 10 minutes. Do not share this code with anyone.',
-      time: new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' }),
-      reply_to: email
+      to_email: email,
+      name: clientData.name,
+      message: generatedOTP,
+      email: email
     });
 
     document.getElementById('otp-sub').textContent = 'We sent a 6-digit code to ' + email + '. Enter it below.';
@@ -429,13 +428,12 @@ async function resendOTP() {
 
   try {
     await emailjs.send(EMAILJS_SERVICE, EMAILJS_OTP_TEMPLATE, {
-      from_name: clientData.name,
-      phone: clientPhone,
-      referral: 'NEW NetWize Verification Code: ' + generatedOTP + ' — Valid for 10 minutes.',
-      time: new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' }),
-      reply_to: clientEmail
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_OTP_TEMPLATE, {
+      to_email: clientEmail,
+      name: clientData.name,
+      message: generatedOTP,
+      email: clientEmail
     });
-    document.getElementById('otp-info').style.display = 'block';
     document.getElementById('otp-info').textContent = 'New code sent!';
     setTimeout(() => { document.getElementById('otp-info').style.display = 'none'; }, 3000);
     startResendTimer();
@@ -544,11 +542,4 @@ async function checkPins() {
 }
 
 async function hashPin(pin, token) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(pin + token);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-</script>
-</body>
-</html>
+  const encoder =
