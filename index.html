@@ -1,245 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NetWize — Private Wealth Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NetWize — Create Your PIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.1); --gold-border: rgba(201,168,76,0.22); --green: #3ECF8E; --red: #F87171; }
+body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0D0D0B; font-family: 'DM Sans', sans-serif; font-weight: 300; padding: 24px; }
 
-:root {
-  --obsidian: #0D0D0B;
-  --surface: #161614;
-  --surface2: #1E1E1C;
-  --surface3: #252522;
-  --gold: #C9A84C;
-  --gold-light: #E8CC88;
-  --gold-dim: rgba(201,168,76,0.1);
-  --gold-border: rgba(201,168,76,0.22);
-  --ivory: #F2EDE4;
-  --muted: #6B6860;
-  --hint: #383634;
-  --border: rgba(255,255,255,0.06);
-  --border2: rgba(255,255,255,0.11);
-  --green: #3ECF8E;
-  --red: #F87171;
-  --blue: #60A5FA;
-}
+.box { width: 100%; max-width: 400px; text-align: center; }
+.logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 40px; }
+.logo-name { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 500; color: #F2EDE4; }
+.logo-name span { color: var(--gold); }
 
-html { scroll-behavior: smooth; }
-body {
-  background: var(--obsidian);
-  color: var(--ivory);
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 300;
-  line-height: 1.65;
-  overflow-x: hidden;
-}
+.step { display: none; }
+.step.active { display: block; }
 
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 9999; opacity: 0.5;
-}
+/* STEP 1 - WELCOME */
+.welcome-card { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 20px; padding: 32px 28px; margin-bottom: 24px; }
+.welcome-icon { font-size: 36px; margin-bottom: 16px; }
+.welcome-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: #F2EDE4; margin-bottom: 8px; }
+.welcome-name { color: var(--gold); }
+.welcome-sub { font-size: 13px; color: #6B6860; line-height: 1.7; }
+.welcome-tier { display: inline-flex; align-items: center; gap: 6px; background: var(--gold-dim); border: 0.5px solid var(--gold-border); color: var(--gold); font-size: 11px; font-weight: 500; padding: 5px 14px; border-radius: 20px; margin-top: 14px; }
 
-/* NAV */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  padding: 22px 64px;
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(13,13,11,0.88);
-  backdrop-filter: blur(24px);
-  border-bottom: 0.5px solid var(--border);
-  transition: padding 0.3s;
-}
-.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.nav-logo-icon { width: 32px; height: 32px; }
-.nav-logo-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; color: var(--ivory); letter-spacing: -0.2px; }
-.nav-logo-name span { color: var(--gold); }
-.nav-links { display: flex; gap: 36px; align-items: center; }
-.nav-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
-.nav-links a:hover { color: var(--ivory); }
-.nav-cta { font-size: 13px; font-weight: 400; color: var(--gold); border: 0.5px solid var(--gold-border); background: var(--gold-dim); padding: 10px 22px; border-radius: 6px; text-decoration: none; transition: all 0.25s; }
-.nav-cta:hover { background: rgba(201,168,76,0.18); color: var(--gold-light); }
+/* STEP 2 - CREATE PIN */
+.step-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-bottom: 8px; }
+.step-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: #F2EDE4; margin-bottom: 8px; }
+.step-sub { font-size: 13px; color: #6B6860; margin-bottom: 32px; line-height: 1.6; }
 
-/* HERO */
-.hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 130px 40px 90px; position: relative; overflow: hidden; }
-.hero-glow { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 700px; background: radial-gradient(ellipse, rgba(201,168,76,0.05) 0%, transparent 65%); pointer-events: none; }
-.hero-glow2 { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; height: 300px; background: linear-gradient(to top, rgba(13,13,11,1) 0%, transparent 100%); pointer-events: none; }
+.pin-display { display: flex; gap: 12px; justify-content: center; margin-bottom: 32px; }
+.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.11); transition: all 0.2s; }
+.pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+.pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.4s ease; }
+.pin-dot.success { background: var(--green); border-color: var(--green); }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
 
-.hero-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); border: 0.5px solid var(--gold-border); padding: 7px 18px; border-radius: 30px; margin-bottom: 40px; animation: fadeUp 0.9s ease both; background: var(--gold-dim); }
-.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 280px; margin: 0 auto 16px; }
+.pin-key { aspect-ratio: 1; background: #161614; border: 0.5px solid rgba(255,255,255,0.11); border-radius: 14px; font-size: 20px; font-weight: 400; color: #F2EDE4; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif; user-select: none; }
+.pin-key:hover { background: #1E1E1C; border-color: var(--gold-border); }
+.pin-key:active { transform: scale(0.94); background: var(--gold-dim); }
+.pin-key.delete { font-size: 16px; color: #6B6860; }
+.pin-key.empty { background: transparent; border: none; cursor: default; }
+.pin-key.empty:hover { background: transparent; }
 
-.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(46px, 6.5vw, 86px); font-weight: 400; line-height: 1.06; letter-spacing: -1.5px; color: var(--ivory); max-width: 820px; animation: fadeUp 0.9s 0.1s ease both; }
-.hero h1 em { font-style: italic; color: var(--gold); }
-.hero-sub { font-size: 17px; color: var(--muted); max-width: 500px; line-height: 1.75; margin-top: 26px; animation: fadeUp 0.9s 0.2s ease both; }
+.pin-hint { font-size: 12px; color: #383634; margin-bottom: 16px; min-height: 18px; }
+.pin-error { font-size: 13px; color: var(--red); margin-top: 8px; min-height: 20px; }
 
-.hero-actions { display: flex; gap: 14px; margin-top: 44px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.9s 0.3s ease both; }
-.btn-gold { background: var(--gold); color: var(--obsidian); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 16px 36px; border-radius: 6px; text-decoration: none; border: none; cursor: pointer; transition: all 0.25s; }
-.btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(201,168,76,0.2); }
-.btn-outline { background: transparent; color: var(--ivory); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 300; padding: 16px 36px; border-radius: 6px; text-decoration: none; border: 0.5px solid var(--border2); transition: all 0.25s; }
-.btn-outline:hover { border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.03); }
+/* STEP 3 - CONFIRM PIN */
+/* STEP 4 - SUCCESS */
+.success-card { background: linear-gradient(145deg, #0a2a12, #0f1f10); border: 0.5px solid rgba(62,207,142,0.25); border-radius: 20px; padding: 32px 28px; }
+.success-icon { font-size: 48px; margin-bottom: 16px; }
+.success-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: #F2EDE4; margin-bottom: 8px; }
+.success-sub { font-size: 13px; color: #6B6860; line-height: 1.7; margin-bottom: 24px; }
 
-.hero-stats { display: flex; gap: 56px; margin-top: 80px; padding-top: 48px; border-top: 0.5px solid var(--border); flex-wrap: wrap; justify-content: center; animation: fadeUp 0.9s 0.45s ease both; }
-.hero-stat-val { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 400; color: var(--ivory); line-height: 1; }
-.hero-stat-val em { color: var(--gold); font-style: normal; }
-.hero-stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+/* LOADING */
+.loading-card { background: #161614; border: 0.5px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 40px 28px; }
+.loading-spinner { width: 36px; height: 36px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-@keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+/* ERROR */
+.error-card { background: rgba(248,113,113,0.05); border: 0.5px solid rgba(248,113,113,0.2); border-radius: 20px; padding: 32px 28px; }
+.error-title { font-family: 'Playfair Display', serif; font-size: 22px; color: #F2EDE4; margin-bottom: 8px; }
+.error-sub { font-size: 13px; color: #6B6860; line-height: 1.7; }
 
-/* TICKER */
-.ticker-band { background: var(--surface); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); padding: 14px 0; overflow: hidden; }
-.ticker-track { display: flex; gap: 48px; animation: ticker 28s linear infinite; width: max-content; }
-@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-.ticker-item { display: flex; align-items: center; gap: 10px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
-.ticker-item .pair { color: var(--ivory); font-weight: 500; }
-.ticker-item .up { color: var(--green); }
-.ticker-item .dn { color: var(--red); }
-.ticker-sep { color: var(--hint); }
+/* BUTTONS */
+.btn-gold { width: 100%; background: var(--gold); color: #0D0D0B; font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 18px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.25s; }
+.btn-gold:hover { background: #E8CC88; }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-outline { width: 100%; background: transparent; color: #6B6860; font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 12px; border-radius: 10px; border: 0.5px solid rgba(255,255,255,0.11); cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+.btn-outline:hover { color: #F2EDE4; border-color: rgba(255,255,255,0.22); }
 
-/* SECTIONS */
-.section { padding: 110px 64px; }
-.section-inner { max-width: 1080px; margin: 0 auto; }
-.eyebrow { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); opacity: 0.8; margin-bottom: 18px; }
-.section h2 { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 50px); font-weight: 400; line-height: 1.12; letter-spacing: -0.5px; color: var(--ivory); }
-.section h2 em { font-style: italic; color: var(--gold); }
-.gold-rule { width: 36px; height: 1px; background: var(--gold); opacity: 0.5; margin: 22px 0; }
-
-/* PROBLEM */
-.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 0.5px solid var(--border); border-radius: 18px; overflow: hidden; margin-top: 56px; }
-.prob-cell { background: var(--surface); padding: 40px 38px; transition: background 0.3s; }
-.prob-cell:hover { background: var(--surface2); }
-.prob-n { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 400; color: var(--hint); line-height: 1; margin-bottom: 16px; }
-.prob-title { font-size: 15px; font-weight: 500; color: var(--ivory); margin-bottom: 10px; }
-.prob-body { font-size: 13px; color: var(--muted); line-height: 1.75; }
-
-/* HOW */
-.how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 0.5px solid var(--border); border-radius: 18px; overflow: hidden; margin-top: 56px; }
-.how-cell { background: var(--surface); padding: 40px 34px; }
-.how-step { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.65; margin-bottom: 10px; }
-.how-icon-wrap { width: 42px; height: 42px; border-radius: 10px; background: var(--gold-dim); border: 0.5px solid var(--gold-border); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
-.how-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 400; color: var(--ivory); margin-bottom: 12px; }
-.how-body { font-size: 13px; color: var(--muted); line-height: 1.75; }
-
-/* PREVIEW */
-.preview-section { padding: 0 64px 110px; }
-.preview-inner { max-width: 1080px; margin: 0 auto; }
-.preview-frame { background: var(--surface); border: 0.5px solid var(--border2); border-radius: 20px; overflow: hidden; }
-.preview-bar { background: var(--surface2); border-bottom: 0.5px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
-.preview-dots { display: flex; gap: 6px; }
-.preview-dot { width: 10px; height: 10px; border-radius: 50%; }
-.preview-url { flex: 1; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-.preview-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.prev-card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; }
-.prev-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-.prev-val { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--ivory); }
-.prev-val span { color: var(--gold); }
-.prev-change { font-size: 11px; margin-top: 5px; }
-.prev-bar-wrap { grid-column: span 3; background: var(--surface2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; }
-.prev-alloc { display: flex; height: 8px; border-radius: 8px; overflow: hidden; gap: 2px; }
-
-/* QUOTE */
-.quote-band { padding: 80px 64px; background: var(--surface); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); text-align: center; }
-.quote-mark { font-family: 'Playfair Display', serif; font-size: 72px; color: var(--gold); opacity: 0.25; line-height: 0.5; margin-bottom: 20px; display: block; }
-.quote-text { font-family: 'Playfair Display', serif; font-size: clamp(20px, 2.8vw, 34px); font-weight: 400; font-style: italic; color: var(--ivory); line-height: 1.45; max-width: 680px; margin: 0 auto; }
-.quote-attr { font-size: 13px; color: var(--muted); margin-top: 24px; }
-.quote-attr strong { color: var(--ivory); font-weight: 400; }
-
-/* PRICING */
-.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 56px; }
-.price-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 18px; padding: 36px 28px; display: flex; flex-direction: column; transition: border-color 0.3s; }
-.price-card:hover { border-color: var(--border2); }
-.price-card.featured { background: linear-gradient(160deg, #161408, #201e0e); border-color: var(--gold-border); position: relative; }
-.featured-badge { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); background: var(--gold); color: var(--obsidian); font-size: 10px; font-weight: 500; padding: 4px 16px; border-radius: 0 0 10px 10px; }
-.price-tier { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
-.price-card.featured .price-tier { color: var(--gold); }
-.price-val { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 400; color: var(--ivory); line-height: 1; }
-.price-sub { font-size: 12px; color: var(--muted); margin-top: 6px; margin-bottom: 28px; }
-.price-currency { font-size: 18px; font-family: 'DM Mono', monospace; color: var(--gold); vertical-align: super; }
-.price-features { list-style: none; display: flex; flex-direction: column; gap: 11px; flex: 1; }
-.price-features li { font-size: 13px; color: var(--muted); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
-.price-features li::before { content: '—'; color: var(--gold); opacity: 0.55; flex-shrink: 0; }
-.price-btn { display: block; margin-top: 28px; text-align: center; text-decoration: none; font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 14px; border-radius: 8px; transition: all 0.25s; cursor: pointer; border: none; }
-.price-card:not(.featured) .price-btn { color: var(--ivory); border: 0.5px solid var(--border2); background: transparent; }
-.price-card:not(.featured) .price-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
-.price-card.featured .price-btn { background: var(--gold); color: var(--obsidian); font-weight: 500; }
-.price-card.featured .price-btn:hover { background: var(--gold-light); }
-
-/* CONTACT */
-.contact-section { padding: 120px 64px; text-align: center; position: relative; overflow: hidden; }
-.contact-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(201,168,76,0.04) 0%, transparent 70%); pointer-events: none; }
-.contact-section h2 { font-family: 'Playfair Display', serif; font-size: clamp(34px, 5vw, 62px); font-weight: 400; line-height: 1.08; letter-spacing: -0.8px; margin-bottom: 18px; }
-.contact-section h2 em { font-style: italic; color: var(--gold); }
-.contact-section p { font-size: 16px; color: var(--muted); max-width: 460px; margin: 0 auto 44px; line-height: 1.75; }
-
-.contact-form { display: flex; flex-direction: column; gap: 12px; max-width: 400px; margin: 0 auto; }
-.contact-form input {
-  width: 100%; padding: 16px 20px;
-  background: var(--surface);
-  border: 0.5px solid var(--border2);
-  border-radius: 8px; color: var(--ivory);
-  font-size: 14px; font-family: 'DM Sans', sans-serif;
-  font-weight: 300; outline: none; transition: border-color 0.2s;
-}
-.contact-form input::placeholder { color: var(--muted); }
-.contact-form input:focus { border-color: var(--gold-border); }
-
-/* Submit button states */
-.submit-btn { width: 100%; font-size: 15px; padding: 18px; position: relative; overflow: hidden; }
-.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-
-/* Success state */
-.success-box { display: none; background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 16px; padding: 32px; max-width: 400px; margin: 0 auto; }
-.success-box.show { display: block; animation: fadeUp 0.5s ease both; }
-.success-icon { font-size: 32px; margin-bottom: 12px; }
-.success-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--ivory); margin-bottom: 8px; }
-.success-msg { font-size: 14px; color: var(--muted); line-height: 1.7; }
-
-.contact-note { font-size: 12px; color: var(--hint); margin-top: 10px; }
-
-/* FOOTER */
-footer { padding: 36px 64px; border-top: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.footer-logo { display: flex; align-items: center; gap: 8px; }
-.footer-logo-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 400; color: var(--muted); }
-.footer-logo-name span { color: var(--gold); }
-.footer-links { display: flex; gap: 24px; }
-.footer-links a { font-size: 12px; color: var(--hint); text-decoration: none; transition: color 0.2s; }
-.footer-links a:hover { color: var(--muted); }
-.footer-copy { font-size: 12px; color: var(--hint); }
-
-/* REVEAL */
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.75s ease, transform 0.75s ease; }
-.reveal.visible { opacity: 1; transform: none; }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  nav { padding: 18px 24px; }
-  .nav-links { display: none; }
-  .section { padding: 72px 24px; }
-  .preview-section { padding: 0 24px 72px; }
-  .problem-grid { grid-template-columns: 1fr; }
-  .how-grid { grid-template-columns: 1fr; }
-  .pricing-grid { grid-template-columns: 1fr; }
-  .quote-band { padding: 60px 24px; }
-  .contact-section { padding: 80px 24px; }
-  footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
-  .hero { padding: 110px 24px 70px; }
-  .hero-stats { gap: 32px; }
-  .preview-body { grid-template-columns: 1fr; }
-  .prev-bar-wrap { grid-column: span 1; }
-}
+.privacy { font-size: 11px; color: #383634; margin-top: 20px; line-height: 1.6; }
 </style>
 </head>
 <body>
-
-<!-- NAV -->
-<nav id="mainNav">
-  <a class="nav-logo" href="#">
-    <svg class="nav-logo-icon" viewBox="0 0 44 44" fill="none">
+<div class="box">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
       <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
       <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
       <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
@@ -247,303 +88,227 @@ footer { padding: 36px 64px; border-top: 0.5px solid var(--border); display: fle
       <path d="M9 30 L17 22 L25 16 L33 8" stroke="#F2EDE4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
       <circle cx="33" cy="8" r="2.5" fill="#F2EDE4" opacity="0.6"/>
     </svg>
-    <div class="nav-logo-name">Net<span>Wize</span></div>
-  </a>
-  <div class="nav-links">
-    <a href="#problem">The Problem</a>
-    <a href="#how">How It Works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="https://netwize.live/demo2" target="_blank">Live Demo</a>
+    <div class="logo-name">Net<span>Wize</span></div>
   </div>
-  <a href="#contact" class="nav-cta">Request Access</a>
-</nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-badge"><div class="hero-badge-dot"></div>Private Wealth Intelligence · Nigeria</div>
-  <h1>Know exactly<br>what you're <em>worth.</em></h1>
-  <p class="hero-sub">The first platform built for Nigeria's ₦1B+ individuals — unifying every bank, property, equity, and foreign currency into one live number.</p>
-  <div class="hero-actions">
-    <a href="#contact" class="btn-gold">Request Private Access</a>
-    <a href="https://netwize.live/demo2" target="_blank" class="btn-outline">See Live Demo</a>
+  <!-- LOADING -->
+  <div class="step active" id="step-loading">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <div style="font-size:14px;color:#6B6860">Verifying your setup link...</div>
+    </div>
   </div>
-  <div class="hero-stats">
-    <div><div class="hero-stat-val">₦<em>1B+</em></div><div class="hero-stat-label">Minimum client net worth</div></div>
-    <div><div class="hero-stat-val"><em>5</em>+</div><div class="hero-stat-label">Asset classes unified</div></div>
-    <div><div class="hero-stat-val"><em>Live</em></div><div class="hero-stat-label">Real-time portfolio sync</div></div>
-    <div><div class="hero-stat-val"><em>100%</em></div><div class="hero-stat-label">Built for Nigeria</div></div>
-  </div>
-  <div class="hero-glow2"></div>
-</section>
 
-<!-- TICKER -->
-<div class="ticker-band">
-  <div class="ticker-track">
-    <div class="ticker-item"><span class="pair">USD/NGN</span><span class="up">1,642 ▲</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">GBP/NGN</span><span class="dn">2,080 ▼</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">DANGCEM</span><span class="up">+3.2%</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">GTCO</span><span class="dn">−1.1%</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">NSE ASI</span><span class="up">+1.8%</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">MTNN</span><span class="up">+2.4%</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">EUR/NGN</span><span class="up">1,790 ▲</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">T-BILLS</span><span class="up">22.5% yield</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">USD/NGN</span><span class="up">1,642 ▲</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">GBP/NGN</span><span class="dn">2,080 ▼</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">DANGCEM</span><span class="up">+3.2%</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">NSE ASI</span><span class="up">+1.8%</span></div>
-    <div class="ticker-sep">·</div>
-    <div class="ticker-item"><span class="pair">T-BILLS</span><span class="up">22.5% yield</span></div>
+  <!-- ERROR -->
+  <div class="step" id="step-error">
+    <div class="error-card">
+      <div style="font-size:36px;margin-bottom:16px">⚠️</div>
+      <div class="error-title">Invalid Setup Link</div>
+      <div class="error-sub">This setup link is invalid or has already been used. Please contact your NetWize advisor to receive a new link.<br><br>
+        <a href="mailto:private@netwize.live" style="color:#C9A84C">private@netwize.live</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1: WELCOME -->
+  <div class="step" id="step-welcome">
+    <div class="welcome-card">
+      <div class="welcome-icon">✦</div>
+      <div class="welcome-title">Welcome to NetWize, <span class="welcome-name" id="welcome-name">...</span></div>
+      <div class="welcome-sub">You've been granted private access to your personal wealth intelligence dashboard. You'll now create a secure 6-digit PIN that only you will know.</div>
+      <div class="welcome-tier" id="welcome-tier">Private Client</div>
+    </div>
+    <button class="btn-gold" onclick="goToStep('step-create')">Create My PIN →</button>
+    <p class="privacy">Your PIN is encrypted and stored securely. NetWize staff cannot view or reset it. Keep it private.</p>
+  </div>
+
+  <!-- STEP 2: CREATE PIN -->
+  <div class="step" id="step-create">
+    <div class="step-label">Step 1 of 2</div>
+    <div class="step-title">Create your PIN</div>
+    <div class="step-sub">Choose a 6-digit PIN you'll remember. Do not use your birthday or obvious numbers.</div>
+    <div class="pin-display" id="create-display">
+      <div class="pin-dot" id="c0"></div>
+      <div class="pin-dot" id="c1"></div>
+      <div class="pin-dot" id="c2"></div>
+      <div class="pin-dot" id="c3"></div>
+      <div class="pin-dot" id="c4"></div>
+      <div class="pin-dot" id="c5"></div>
+    </div>
+    <div class="pin-hint" id="create-hint">Enter your 6-digit PIN</div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="createInput('1')">1</div>
+      <div class="pin-key" onclick="createInput('2')">2</div>
+      <div class="pin-key" onclick="createInput('3')">3</div>
+      <div class="pin-key" onclick="createInput('4')">4</div>
+      <div class="pin-key" onclick="createInput('5')">5</div>
+      <div class="pin-key" onclick="createInput('6')">6</div>
+      <div class="pin-key" onclick="createInput('7')">7</div>
+      <div class="pin-key" onclick="createInput('8')">8</div>
+      <div class="pin-key" onclick="createInput('9')">9</div>
+      <div class="pin-key empty"></div>
+      <div class="pin-key" onclick="createInput('0')">0</div>
+      <div class="pin-key delete" onclick="createDelete()">⌫</div>
+    </div>
+    <div class="pin-error" id="create-error"></div>
+  </div>
+
+  <!-- STEP 3: CONFIRM PIN -->
+  <div class="step" id="step-confirm">
+    <div class="step-label">Step 2 of 2</div>
+    <div class="step-title">Confirm your PIN</div>
+    <div class="step-sub">Enter your PIN again to confirm it.</div>
+    <div class="pin-display" id="confirm-display">
+      <div class="pin-dot" id="f0"></div>
+      <div class="pin-dot" id="f1"></div>
+      <div class="pin-dot" id="f2"></div>
+      <div class="pin-dot" id="f3"></div>
+      <div class="pin-dot" id="f4"></div>
+      <div class="pin-dot" id="f5"></div>
+    </div>
+    <div class="pin-hint" id="confirm-hint">Re-enter your PIN to confirm</div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="confirmInput('1')">1</div>
+      <div class="pin-key" onclick="confirmInput('2')">2</div>
+      <div class="pin-key" onclick="confirmInput('3')">3</div>
+      <div class="pin-key" onclick="confirmInput('4')">4</div>
+      <div class="pin-key" onclick="confirmInput('5')">5</div>
+      <div class="pin-key" onclick="confirmInput('6')">6</div>
+      <div class="pin-key" onclick="confirmInput('7')">7</div>
+      <div class="pin-key" onclick="confirmInput('8')">8</div>
+      <div class="pin-key" onclick="confirmInput('9')">9</div>
+      <div class="pin-key empty"></div>
+      <div class="pin-key" onclick="confirmInput('0')">0</div>
+      <div class="pin-key delete" onclick="confirmDelete()">⌫</div>
+    </div>
+    <div class="pin-error" id="confirm-error"></div>
+    <button class="btn-outline" onclick="goToStep('step-create'); createPin=''; updateCreateDisplay();">← Change PIN</button>
+  </div>
+
+  <!-- STEP 4: SAVING -->
+  <div class="step" id="step-saving">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <div style="font-size:14px;color:#6B6860">Setting up your dashboard...</div>
+    </div>
+  </div>
+
+  <!-- STEP 5: SUCCESS -->
+  <div class="step" id="step-success">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <div class="success-title">You're all set.</div>
+      <div class="success-sub">Your PIN has been created. Your NetWize dashboard is ready. Keep your PIN safe — it cannot be recovered if lost.</div>
+      <button class="btn-gold" onclick="window.location.href='/dashboard'">Open My Dashboard →</button>
+    </div>
+    <p class="privacy">Save this link: netwize.live/dashboard · Use your PIN to log in anytime</p>
   </div>
 </div>
-
-<!-- PROBLEM -->
-<section class="section" id="problem">
-  <div class="section-inner">
-    <div class="eyebrow reveal">The Problem</div>
-    <h2 class="reveal">You're wealthy.<br>But you're <em>flying blind.</em></h2>
-    <div class="gold-rule reveal"></div>
-    <p class="reveal" style="font-size:16px;color:var(--muted);max-width:500px;line-height:1.8">Your wealth is scattered across banks, properties, businesses, and foreign accounts. No single tool exists in Nigeria to show you the full picture — until now.</p>
-    <div class="problem-grid reveal">
-      <div class="prob-cell"><div class="prob-n">01</div><div class="prob-title">Scattered across banks</div><div class="prob-body">GTBank, Zenith, Stanbic, Access — you log into 4 different apps just to understand your own liquidity. There is no consolidated view, no total number, no clarity.</div></div>
-      <div class="prob-cell"><div class="prob-n">02</div><div class="prob-title">Properties without live value</div><div class="prob-body">You know what you paid for your Ikoyi house in 2019. But what is it worth today? What's your total real estate exposure as a percentage of your net worth?</div></div>
-      <div class="prob-cell"><div class="prob-n">03</div><div class="prob-title">FX exposure is invisible</div><div class="prob-body">The naira moves 8% in a month and you don't know what that does to your net worth. Dollar, pound, euro — the impact is real and immediate, but no one is tracking it for you.</div></div>
-      <div class="prob-cell"><div class="prob-n">04</div><div class="prob-title">No tool exists for Nigeria</div><div class="prob-body">Bloomberg Terminal is built for global institutions. Every personal finance app was designed for Western salaries. Nothing exists for the Nigerian HNI with complex, multi-asset wealth.</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- PREVIEW -->
-<div class="preview-section">
-  <div class="preview-inner reveal">
-    <div class="preview-frame">
-      <div class="preview-bar">
-        <div class="preview-dots">
-          <div class="preview-dot" style="background:#FF5F57"></div>
-          <div class="preview-dot" style="background:#FEBC2E"></div>
-          <div class="preview-dot" style="background:#28C840"></div>
-        </div>
-        <div class="preview-url">app.netwize.live — Private Dashboard</div>
-      </div>
-      <div class="preview-body">
-        <div class="prev-card"><div class="prev-label">Total Net Worth</div><div class="prev-val"><span>₦</span>2.84B</div><div class="prev-change" style="color:#3ECF8E">▲ +₦38M this week</div></div>
-        <div class="prev-card"><div class="prev-label">Liquid Assets</div><div class="prev-val"><span>₦</span>892M</div><div class="prev-change" style="color:#3ECF8E">▲ +2.1% this month</div></div>
-        <div class="prev-card"><div class="prev-label">USD Holdings</div><div class="prev-val">$412K</div><div class="prev-change" style="color:#60A5FA">Rate: 1,642</div></div>
-        <div class="prev-bar-wrap">
-          <div class="prev-label" style="margin-bottom:10px">Asset Allocation</div>
-          <div class="prev-alloc">
-            <div style="width:34%;background:#C9A84C;height:100%"></div>
-            <div style="width:24%;background:#60A5FA;height:100%"></div>
-            <div style="width:18%;background:#3ECF8E;height:100%"></div>
-            <div style="width:14%;background:#F87171;height:100%"></div>
-            <div style="width:10%;background:#6B6860;height:100%"></div>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">
-            <span style="font-size:11px;color:#6B6860;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#C9A84C;border-radius:2px;display:inline-block"></span>Real Estate 34%</span>
-            <span style="font-size:11px;color:#6B6860;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#60A5FA;border-radius:2px;display:inline-block"></span>Bank Deposits 24%</span>
-            <span style="font-size:11px;color:#6B6860;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#3ECF8E;border-radius:2px;display:inline-block"></span>Equities 18%</span>
-            <span style="font-size:11px;color:#6B6860;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#F87171;border-radius:2px;display:inline-block"></span>FX 14%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<section class="section" id="how" style="background:var(--surface);border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
-  <div class="section-inner">
-    <div class="eyebrow reveal">How It Works</div>
-    <h2 class="reveal">Total clarity in<br><em>three steps.</em></h2>
-    <div class="gold-rule reveal"></div>
-    <div class="how-grid reveal">
-      <div class="how-cell"><div class="how-step">Step 01</div><div class="how-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><div class="how-title">Connect your accounts</div><div class="how-body">We securely link your Nigerian bank accounts, brokerage portfolios, and FX holdings. GTBank, Zenith, Stanbic, Access — all connected with bank-grade encryption.</div></div>
-      <div class="how-cell"><div class="how-step">Step 02</div><div class="how-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="how-title">Add your assets</div><div class="how-body">Input your properties, business stakes, and physical assets. We track market valuations using real Nigerian data — not foreign indices that mean nothing in Lagos or Abuja.</div></div>
-      <div class="how-cell"><div class="how-step">Step 03</div><div class="how-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div><div class="how-title">See everything, clearly</div><div class="how-body">One dashboard. Your exact net worth, updated daily. AI-powered insights that tell you where to act, what's underperforming, and where your money should be working harder.</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- QUOTE -->
-<div class="quote-band reveal">
-  <span class="quote-mark">"</span>
-  <p class="quote-text">For the first time, I knew exactly what I was worth — not an estimate, not a feeling. One number, updated every morning.</p>
-  <p class="quote-attr"><strong>Beta Client</strong> — Lagos entrepreneur, ₦3.2B net worth</p>
-</div>
-
-<!-- PRICING -->
-<section class="section" id="pricing">
-  <div class="section-inner">
-    <div style="text-align:center">
-      <div class="eyebrow reveal">Pricing</div>
-      <h2 class="reveal" style="max-width:100%">Private access.<br><em>No surprises.</em></h2>
-      <div class="gold-rule reveal" style="margin:22px auto"></div>
-      <p class="reveal" style="font-size:15px;color:var(--muted);max-width:440px;margin:0 auto">We onboard a limited number of clients each quarter. Every member receives dedicated, white-glove attention from day one.</p>
-    </div>
-    <div class="pricing-grid reveal">
-      <div class="price-card">
-        <div class="price-tier">Essential</div>
-        <div class="price-val"><span class="price-currency">₦</span>200,000</div>
-        <div class="price-sub">per month</div>
-        <ul class="price-features">
-          <li>Up to 3 bank accounts connected</li>
-          <li>Core net worth dashboard</li>
-          <li>Monthly AI insights report</li>
-          <li>FX rate monitoring</li>
-          <li>Email support</li>
-        </ul>
-        <button class="price-btn" onclick="scrollToContact('Essential — ₦200,000/month')">Request Access</button>
-      </div>
-      <div class="price-card featured">
-        <div class="featured-badge">Most Popular</div>
-        <div class="price-tier">Private</div>
-        <div class="price-val"><span class="price-currency">₦</span>350,000</div>
-        <div class="price-sub">per month</div>
-        <ul class="price-features">
-          <li>Unlimited bank accounts</li>
-          <li>Real estate & equity tracking</li>
-          <li>Weekly AI portfolio insights</li>
-          <li>Live FX impact analysis</li>
-          <li>Dedicated relationship manager</li>
-          <li>Priority onboarding</li>
-        </ul>
-        <button class="price-btn" onclick="scrollToContact('Private — ₦350,000/month')">Request Access</button>
-      </div>
-      <div class="price-card">
-        <div class="price-tier">Signature</div>
-        <div class="price-val"><span class="price-currency">₦</span>500,000</div>
-        <div class="price-sub">per month</div>
-        <ul class="price-features">
-          <li>Everything in Private</li>
-          <li>Business valuation tracking</li>
-          <li>Custom reporting suite</li>
-          <li>Multi-family support</li>
-          <li>Direct WhatsApp line</li>
-          <li>Quarterly strategy review</li>
-        </ul>
-        <button class="price-btn" onclick="scrollToContact('Signature — ₦500,000/month')">Request Access</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section class="contact-section reveal" id="contact">
-  <div class="contact-glow"></div>
-  <h2>Ready to see your<br><em>full picture?</em></h2>
-  <p>We onboard a maximum of 10 new clients per quarter. Leave your details and our team will reach out within 48 hours.</p>
-
-  <div class="contact-form" id="contactForm">
-    <input type="text" id="inp-name" placeholder="Your full name" required>
-    <input type="tel" id="inp-phone" placeholder="WhatsApp number" required>
-    <input type="text" id="inp-referral" placeholder="How did you hear about NetWize? (optional)">
-    <button class="btn-gold submit-btn" id="submitBtn" onclick="handleSubmit()">Request Private Access</button>
-  </div>
-
-  <div class="success-box" id="successBox">
-    <div class="success-icon">✦</div>
-    <div class="success-title">Request received.</div>
-    <div class="success-msg" id="successMsg">Our team will reach out to your WhatsApp within 48 hours. We look forward to speaking with you.</div>
-  </div>
-
-  <p class="contact-note" id="contactNote">Maximum 10 clients per quarter · Response within 48 hours · Strict NDA on all client data</p>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">
-    <svg width="22" height="22" viewBox="0 0 44 44" fill="none">
-      <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
-      <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
-      <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
-      <rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/>
-    </svg>
-    <div class="footer-logo-name">Net<span>Wize</span></div>
-  </div>
-  <div class="footer-links">
-    <a href="#problem">About</a>
-    <a href="#how">How It Works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="https://netwize.live/demo2" target="_blank">Live Demo</a>
-    <a href="mailto:private@netwize.live">Contact</a>
-  </div>
-  <div class="footer-copy">© 2026 NetWize · Private Wealth Intelligence · Nigeria</div>
-</footer>
 
 <script>
-// Init EmailJS
-emailjs.init('6VbbKlW1vXpj62zGX');
+const SUPABASE_URL = 'https://ebkixbivzrrokmdlsxmm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVia2l4Yml2enJyb2ttZGxzeG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODU0NzQsImV4cCI6MjA4OTM2MTQ3NH0.uSamgJI2MeqZzgjBtFCJPqONKjlRq4J5fSSOOHPusaQ';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// Scroll reveal
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+let setupToken = '';
+let clientData = null;
+let createPin = '';
+let confirmPin = '';
+const PIN_LEN = 6;
 
-// Nav shrink on scroll
-window.addEventListener('scroll', () => {
-  document.getElementById('mainNav').style.padding = window.scrollY > 60 ? '14px 64px' : '22px 64px';
+// Get token from URL
+window.addEventListener('load', async () => {
+  const params = new URLSearchParams(window.location.search);
+  setupToken = params.get('token') || '';
+  if (!setupToken) { showError(); return; }
+  await verifyToken();
 });
 
-// Scroll to contact with pre-filled tier
-function scrollToContact(tier) {
-  document.getElementById('inp-referral').value = 'Interested in: ' + tier;
-  document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-  setTimeout(() => document.getElementById('inp-name').focus(), 600);
+async function verifyToken() {
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('setup_token', setupToken)
+      .eq('is_active', false)
+      .single();
+    if (error || !data) { showError(); return; }
+    clientData = data;
+    document.getElementById('welcome-name').textContent = data.name.split(' ')[0];
+    document.getElementById('welcome-tier').textContent = '✦ ' + (data.tier || 'Private') + ' Client';
+    goToStep('step-welcome');
+  } catch { showError(); }
 }
 
-// Form submission with EmailJS
-async function handleSubmit() {
-  const name = document.getElementById('inp-name').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim();
-  const referral = document.getElementById('inp-referral').value.trim();
-  const btn = document.getElementById('submitBtn');
+function showError() { goToStep('step-error'); }
 
-  if (!name) { document.getElementById('inp-name').focus(); return; }
-  if (!phone) { document.getElementById('inp-phone').focus(); return; }
+function goToStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-  // Loading state
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
+// Simple hash function
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin + setupToken);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-  try {
-    await emailjs.send('service_0grs9ea', 'template_5qivgej', {
-      from_name: name,
-      phone: phone,
-      referral: referral || 'Not specified',
-      time: new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' }),
-      reply_to: 'private@netwize.live'
-    });
-
-    // Success
-    document.getElementById('contactForm').style.display = 'none';
-    document.getElementById('contactNote').style.display = 'none';
-    document.getElementById('successMsg').textContent = 'Thank you, ' + name + '. Our team will reach out to your WhatsApp number within 48 hours. We look forward to speaking with you.';
-    document.getElementById('successBox').classList.add('show');
-
-  } catch (error) {
-    btn.disabled = false;
-    btn.textContent = 'Request Private Access';
-    alert('Something went wrong. Please email us directly at private@netwize.live');
+// CREATE PIN
+function createInput(d) {
+  if (createPin.length >= PIN_LEN) return;
+  createPin += d;
+  updateCreateDisplay();
+  if (createPin.length === PIN_LEN) setTimeout(() => goToStep('step-confirm'), 200);
+}
+function createDelete() { createPin = createPin.slice(0,-1); updateCreateDisplay(); document.getElementById('create-error').textContent = ''; }
+function updateCreateDisplay() {
+  for (let i = 0; i < PIN_LEN; i++) {
+    const dot = document.getElementById('c' + i);
+    dot.classList.toggle('filled', i < createPin.length);
+    dot.classList.remove('error');
   }
 }
 
-// Input focus styles
-document.querySelectorAll('.contact-form input').forEach(input => {
-  input.addEventListener('focus', () => input.style.borderColor = 'rgba(201,168,76,0.4)');
-  input.addEventListener('blur', () => input.style.borderColor = 'rgba(255,255,255,0.12)');
-});
+// CONFIRM PIN
+function confirmInput(d) {
+  if (confirmPin.length >= PIN_LEN) return;
+  confirmPin += d;
+  updateConfirmDisplay();
+  if (confirmPin.length === PIN_LEN) setTimeout(checkConfirm, 200);
+}
+function confirmDelete() { confirmPin = confirmPin.slice(0,-1); updateConfirmDisplay(); document.getElementById('confirm-error').textContent = ''; }
+function updateConfirmDisplay() {
+  for (let i = 0; i < PIN_LEN; i++) {
+    const dot = document.getElementById('f' + i);
+    dot.classList.toggle('filled', i < confirmPin.length);
+    dot.classList.remove('error');
+  }
+}
+
+async function checkConfirm() {
+  if (createPin !== confirmPin) {
+    for (let i = 0; i < PIN_LEN; i++) document.getElementById('f' + i).classList.add('error');
+    document.getElementById('confirm-error').textContent = 'PINs do not match. Please try again.';
+    setTimeout(() => { confirmPin = ''; updateConfirmDisplay(); }, 1000);
+    return;
+  }
+  // PINs match — save
+  goToStep('step-saving');
+  try {
+    const hashed = await hashPin(createPin);
+    const { error } = await supabase
+      .from('clients')
+      .update({ pin_hash: hashed, is_active: true, setup_token: 'USED_' + setupToken })
+      .eq('setup_token', setupToken);
+    if (error) throw error;
+    goToStep('step-success');
+  } catch (e) {
+    goToStep('step-confirm');
+    document.getElementById('confirm-error').textContent = 'Something went wrong. Please try again or contact private@netwize.live';
+  }
+}
 </script>
 </body>
 </html>
