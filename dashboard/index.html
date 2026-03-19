@@ -317,9 +317,14 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
 .modal-btn-confirm:hover { background: #f95c5c; }
 
 /* ── THEME TOGGLE ── */
-.theme-toggle { width: 42px; height: 42px; border-radius: 50%; background: var(--surface2); border: 0.5px solid var(--border2); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.theme-toggle:hover { border-color: var(--gold-border); background: var(--gold-dim); }
-.theme-toggle svg { width: 18px; height: 18px; transition: all 0.3s; }
+.theme-toggle { display: flex; align-items: center; gap: 0; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: 30px; cursor: pointer; transition: all 0.3s; user-select: none; overflow: hidden; height: 36px; flex-shrink: 0; }
+.theme-toggle:hover { border-color: var(--gold-border); }
+.theme-toggle-text { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; padding: 0 12px; color: var(--muted); transition: all 0.3s; white-space: nowrap; }
+.theme-toggle-knob { width: 36px; height: 36px; border-radius: 50%; background: var(--surface3); border: 0.5px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.3s; }
+.theme-toggle-knob svg { width: 16px; height: 16px; transition: all 0.3s; }
+[data-theme="dark"] .theme-toggle { flex-direction: row-reverse; }
+[data-theme="dark"] .theme-toggle-knob { background: #1a1a18; }
+[data-theme="light"] .theme-toggle-knob { background: #f0ede8; }
 
 /* ── PROFILE PANEL ── */
 .profile-panel { position: fixed; top: 0; right: -340px; width: 320px; height: 100vh; background: var(--surface); border-left: 0.5px solid var(--border2); z-index: 200; transition: right 0.35s cubic-bezier(0.4,0,0.2,1); overflow-y: auto; box-shadow: -8px 0 32px rgba(0,0,0,0.3); }
@@ -415,14 +420,18 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300;
       <div class="dash-nav-name">Net<span>Wize</span></div>
     </div>
     <div class="dash-nav-right">
-      <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="openProfile()">
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:20px;border:0.5px solid transparent;transition:all 0.2s" onclick="openProfile()" onmouseover="this.style.borderColor='rgba(201,168,76,0.22)'" onmouseout="this.style.borderColor='transparent'">
         <div class="client-avatar" id="clientAvatar">--</div>
         <div class="dash-client-name"><strong id="clientNameDisplay">Client</strong></div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn" title="Switch theme">
-        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round">
-          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-        </svg>
+        <span class="theme-toggle-text" id="themeLabel">NIGHTMODE</span>
+        <div class="theme-toggle-knob">
+          <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </div>
       </div>
     </div>
   </nav>
@@ -1555,7 +1564,7 @@ window.addEventListener("load", () => { addBank(); addProperty(); addEquity(); a
     </div>
     <div class="profile-menu-item" onclick="window.location.href='mailto:private@netwize.live';closeProfile()">
       <div class="profile-menu-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-      <div><div class="profile-menu-label">Email Support</div><div class="profile-menu-sub">private@netwize.live</div></div>
+      <div><div class="profile-menu-label">Email Support</div><div class="profile-menu-sub"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a5d5d7ccd3c4d1c0e5cbc0d1d2ccdfc08bc9ccd3c0">[email&#160;protected]</a></div></div>
     </div>
   </div>
 
@@ -1576,9 +1585,4 @@ window.addEventListener("load", () => { addBank(); addProperty(); addEquity(); a
   </div>
 
   <div class="profile-signout">
-    <button class="profile-signout-btn" onclick="closeProfile();showSignout()">Sign Out</button>
-  </div>
-</div>
-
-</body>
-</html>
+    <bu
