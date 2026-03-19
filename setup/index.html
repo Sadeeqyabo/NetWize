@@ -322,9 +322,13 @@ window.addEventListener('load', async () => {
   const params = new URLSearchParams(window.location.search);
   setupToken = params.get('token') || '';
   if (!setupToken) { showErr(); return; }
-  await verifyToken();
+  clientData = { name: 'Valued Client', tier: 'Private', setup_token: setupToken };
+  document.getElementById('welcome-first-name').textContent = 'Valued Client';
+  document.getElementById('welcome-tier').textContent = '✦ Private Client';
+  goStep('step-welcome');
+  updateProgress(1);
+  verifyToken();
 });
-
 async function verifyToken() {
   try {
     const { data, error } = await sb.from('clients').select('*').eq('setup_token', setupToken).single();
