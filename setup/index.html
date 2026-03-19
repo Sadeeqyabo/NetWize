@@ -238,8 +238,8 @@ async function sendOTP() {
   info.style.display = 'block';
   try {
     await emailjs.send('service_0grs9ea', 'template_jxf0vpq', {
-      to_email: email, name: 'NetWize Client', message: generatedOTP, email: email
-    });
+  to_email: clientEmail, name: 'NetWize Client', message: generatedOTP, email: clientEmail
+});
     document.getElementById('otp-sub').textContent = 'We sent a 6-digit code to ' + email;
     goStep('step-otp'); prog(3);
     setTimeout(() => document.getElementById('o0').focus(), 300);
