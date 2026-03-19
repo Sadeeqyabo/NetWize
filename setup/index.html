@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NetWize — Get Started</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.1); --gold-border: rgba(201,168,76,0.22);
+  --green: #3ECF8E; --red: #F87171; --bg: #0D0D0B; --surface: #161614;
+  --surface2: #1E1E1C; --border2: rgba(255,255,255,0.11); --text: #F2EDE4;
+  --muted: #6B6860; --hint: #383634;
+}
+
+body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); font-family: 'DM Sans', sans-serif; font-weight: 300; padding: 24px; }
+
+.box { width: 100%; max-width: 420px; }
+
+/* LOGO */
+.logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 40px; }
+.logo-name { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 500; color: var(--text); }
+.logo-name span { color: var(--gold); }
+
+/* PROGRESS */
+.progress { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 36px; }
+.progress-step { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; transition: all 0.3s; border: 1.5px solid var(--border2); color: var(--hint); }
+.progress-step.active { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+.progress-step.done { background: var(--green); border-color: var(--green); color: var(--bg); }
+.progress-line { width: 32px; height: 1px; background: var(--border2); transition: all 0.3s; }
+.progress-line.done { background: var(--green); }
+
+/* STEP */
+.step { display: none; }
+.step.active { display: block; animation: fadeUp 0.35s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+.step-eyebrow { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-bottom: 8px; text-align: center; }
+.step-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: var(--text); margin-bottom: 8px; text-align: center; }
+.step-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.65; text-align: center; }
+
+/* WELCOME CARD */
+.welcome-card { background: linear-gradient(145deg, #131310, #1c1a0e); border: 0.5px solid var(--gold-border); border-radius: 20px; padding: 28px 24px; margin-bottom: 24px; text-align: center; }
+.welcome-icon { font-size: 40px; margin-bottom: 14px; }
+.welcome-name { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); margin-bottom: 8px; }
+.welcome-name span { color: var(--gold); }
+.welcome-tier { display: inline-flex; align-items: center; gap: 6px; background: var(--gold-dim); border: 0.5px solid var(--gold-border); color: var(--gold); font-size: 11px; font-weight: 500; padding: 5px 14px; border-radius: 20px; margin-top: 8px; }
+
+/* INPUTS */
+.field { margin-bottom: 14px; }
+.field label { font-size: 11px; color: var(--hint); letter-spacing: 0.3px; display: block; margin-bottom: 6px; }
+.field input {
+  width: 100%; padding: 14px 16px;
+  background: var(--surface2); border: 0.5px solid var(--border2);
+  border-radius: 10px; color: var(--text);
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--gold-border); }
+.field input::placeholder { color: var(--hint); }
+
+/* OTP INPUT */
+.otp-inputs { display: flex; gap: 10px; justify-content: center; margin: 24px 0; }
+.otp-digit {
+  width: 52px; height: 60px;
+  background: var(--surface2); border: 0.5px solid var(--border2);
+  border-radius: 12px; text-align: center;
+  font-size: 24px; font-weight: 500; color: var(--text);
+  font-family: 'DM Sans', sans-serif; outline: none;
+  transition: border-color 0.2s; caret-color: var(--gold);
+}
+.otp-digit:focus { border-color: var(--gold-border); }
+.otp-digit.filled { border-color: var(--gold); }
+.otp-digit.error { border-color: var(--red); animation: shake 0.4s ease; }
+
+/* PIN */
+.pin-display { display: flex; gap: 12px; justify-content: center; margin-bottom: 28px; }
+.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border2); transition: all 0.2s; }
+.pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+.pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.4s ease; }
+.pin-dot.success { background: var(--green); border-color: var(--green); }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 280px; margin: 0 auto 16px; }
+.pin-key { aspect-ratio: 1; background: var(--surface); border: 0.5px solid var(--border2); border-radius: 14px; font-size: 20px; font-weight: 400; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; user-select: none; }
+.pin-key:hover { background: var(--surface2); border-color: var(--gold-border); }
+.pin-key:active { transform: scale(0.94); background: var(--gold-dim); }
+.pin-key.delete { font-size: 16px; color: var(--muted); }
+.pin-key.empty { background: transparent; border: none; cursor: default; }
+
+/* BUTTONS */
+.btn-gold { width: 100%; background: var(--gold); color: var(--bg); font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 16px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.25s; }
+.btn-gold:hover { background: #E8CC88; }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-ghost { width: 100%; background: transparent; color: var(--muted); font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 12px; border-radius: 10px; border: 0.5px solid var(--border2); cursor: pointer; margin-top: 10px; transition: all 0.2s; }
+.btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.22); }
+
+/* SUCCESS */
+.success-card { background: linear-gradient(145deg, #0a2a12, #0f1f10); border: 0.5px solid rgba(62,207,142,0.25); border-radius: 20px; padding: 36px 28px; text-align: center; }
+.success-icon { font-size: 52px; margin-bottom: 16px; }
+.success-title { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--text); margin-bottom: 8px; }
+.success-sub { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+
+/* LOADING */
+.loading-card { background: var(--surface); border: 0.5px solid var(--border2); border-radius: 20px; padding: 40px 28px; text-align: center; }
+.spinner { width: 36px; height: 36px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ERROR */
+.error-card { background: rgba(248,113,113,0.05); border: 0.5px solid rgba(248,113,113,0.2); border-radius: 20px; padding: 32px 28px; text-align: center; }
+
+/* MESSAGES */
+.msg-error { font-size: 13px; color: var(--red); margin-top: 10px; min-height: 20px; text-align: center; }
+.msg-info { font-size: 13px; color: var(--gold); margin-top: 10px; min-height: 20px; text-align: center; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.resend-btn { font-size: 12px; color: var(--gold); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; margin-top: 14px; display: block; width: 100%; text-align: center; }
+.resend-btn:hover { text-decoration: underline; }
+.resend-btn:disabled { color: var(--hint); cursor: not-allowed; text-decoration: none; }
+
+.privacy-note { font-size: 11px; color: var(--hint); margin-top: 20px; line-height: 1.6; text-align: center; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
+      <rect x="6" y="22" width="6" height="16" rx="1.5" fill="#C9A84C" opacity="0.35"/>
+      <rect x="14" y="16" width="6" height="22" rx="1.5" fill="#C9A84C" opacity="0.6"/>
+      <rect x="22" y="10" width="6" height="28" rx="1.5" fill="#C9A84C" opacity="0.8"/>
+      <rect x="30" y="6" width="6" height="32" rx="1.5" fill="#C9A84C"/>
+      <path d="M9 30 L17 22 L25 16 L33 8" stroke="#F2EDE4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+      <circle cx="33" cy="8" r="2.5" fill="#F2EDE4" opacity="0.6"/>
+    </svg>
+    <div class="logo-name">Net<span>Wize</span></div>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress" id="progressBar">
+    <div class="progress-step active" id="ps1">1</div>
+    <div class="progress-line" id="pl1"></div>
+    <div class="progress-step" id="ps2">2</div>
+    <div class="progress-line" id="pl2"></div>
+    <div class="progress-step" id="ps3">3</div>
+    <div class="progress-line" id="pl3"></div>
+    <div class="progress-step" id="ps4">4</div>
+  </div>
+
+  <!-- STEP: LOADING -->
+  <div class="step active" id="step-loading">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div style="font-size:14px;color:var(--muted)">Verifying your invitation...</div>
+    </div>
+  </div>
+
+  <!-- STEP: ERROR -->
+  <div class="step" id="step-error">
+    <div class="error-card">
+      <div style="font-size:36px;margin-bottom:16px">⚠️</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:8px">Invalid Link</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">This setup link is invalid or has already been used. Contact your NetWize advisor for a new link.<br><br><a href="/cdn-cgi/l/email-protection#7505071c03140110351b1001021c0f105b191c0310" style="color:var(--gold)"><span class="__cf_email__" data-cfemail="e393918a95829786a38d8697948a9986cd8f8a9586">[email&#160;protected]</span></a></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: WELCOME -->
+  <div class="step" id="step-welcome">
+    <div class="welcome-card">
+      <div class="welcome-icon">✦</div>
+      <div class="welcome-name">Welcome to NetWize, <span id="welcome-first-name">...</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.65">You've been granted private access to your personal wealth intelligence dashboard. Let's get you set up in 3 quick steps.</div>
+      <div class="welcome-tier" id="welcome-tier">✦ Private Client</div>
+    </div>
+    <button class="btn-gold" onclick="goStep('step-details')">Get Started →</button>
+    <p class="privacy-note">Your account is fully encrypted · Only you can access your data · netwize.live</p>
+  </div>
+
+  <!-- STEP 2: EMAIL + PHONE -->
+  <div class="step" id="step-details">
+    <div class="step-eyebrow">Step 1 of 3</div>
+    <div class="step-title">Your Details</div>
+    <div class="step-sub">Enter your email and phone number. We'll send a verification code to your email.</div>
+    <div class="field">
+      <label>Email Address *</label>
+      <input type="email" id="inp-email" placeholder="your@email.com">
+    </div>
+    <div class="field">
+      <label>WhatsApp / Phone Number *</label>
+      <input type="tel" id="inp-phone" placeholder="+234 xxx xxxx xxxx">
+    </div>
+    <button class="btn-gold" onclick="sendOTP()">Send Verification Code →</button>
+    <div class="msg-error" id="details-error"></div>
+    <div class="msg-info" id="details-info" style="display:none"></div>
+    <p class="privacy-note">We'll never share your contact details with anyone.</p>
+  </div>
+
+  <!-- STEP 3: OTP VERIFICATION -->
+  <div class="step" id="step-otp">
+    <div class="step-eyebrow">Step 2 of 3</div>
+    <div class="step-title">Verify Your Email</div>
+    <div class="step-sub" id="otp-sub">We sent a 6-digit code to your email. Enter it below.</div>
+    <div class="otp-inputs">
+      <input class="otp-digit" id="otp0" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(0)" onkeydown="otpKey(event,0)">
+      <input class="otp-digit" id="otp1" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(1)" onkeydown="otpKey(event,1)">
+      <input class="otp-digit" id="otp2" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(2)" onkeydown="otpKey(event,2)">
+      <input class="otp-digit" id="otp3" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(3)" onkeydown="otpKey(event,3)">
+      <input class="otp-digit" id="otp4" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(4)" onkeydown="otpKey(event,4)">
+      <input class="otp-digit" id="otp5" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(5)" onkeydown="otpKey(event,5)">
+    </div>
+    <div class="msg-error" id="otp-error"></div>
+    <div class="msg-info" id="otp-info" style="display:none"></div>
+    <button class="resend-btn" id="resend-btn" onclick="resendOTP()">Didn't receive it? Resend code</button>
+    <button class="btn-ghost" onclick="goStep('step-details')">← Change Email</button>
+  </div>
+
+  <!-- STEP 4: CREATE PIN -->
+  <div class="step" id="step-pin">
+    <div class="step-eyebrow">Step 3 of 3</div>
+    <div class="step-title">Create Your PIN</div>
+    <div class="step-sub">Choose a 6-digit PIN you'll use to log in. Do not use your birthday or obvious numbers.</div>
+    <div class="pin-display" id="create-pin-display">
+      <div class="pin-dot" id="cp0"></div>
+      <div class="pin-dot" id="cp1"></div>
+      <div class="pin-dot" id="cp2"></div>
+      <div class="pin-dot" id="cp3"></div>
+      <div class="pin-dot" id="cp4"></div>
+      <div class="pin-dot" id="cp5"></div>
+    </div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="createPinInput('1')">1</div>
+      <div class="pin-key" onclick="createPinInput('2')">2</div>
+      <div class="pin-key" onclick="createPinInput('3')">3</div>
+      <div class="pin-key" onclick="createPinInput('4')">4</div>
+      <div class="pin-key" onclick="createPinInput('5')">5</div>
+      <div class="pin-key" onclick="createPinInput('6')">6</div>
+      <div class="pin-key" onclick="createPinInput('7')">7</div>
+      <div class="pin-key" onclick="createPinInput('8')">8</div>
+      <div class="pin-key" onclick="createPinInput('9')">9</div>
+      <div class="pin-key empty"></div>
+      <div class="pin-key" onclick="createPinInput('0')">0</div>
+      <div class="pin-key delete" onclick="createPinDelete()">⌫</div>
+    </div>
+    <div class="msg-error" id="pin-error"></div>
+  </div>
+
+  <!-- STEP 5: CONFIRM PIN -->
+  <div class="step" id="step-confirm">
+    <div class="step-eyebrow">Step 3 of 3</div>
+    <div class="step-title">Confirm Your PIN</div>
+    <div class="step-sub">Enter your PIN again to confirm.</div>
+    <div class="pin-display" id="confirm-pin-display">
+      <div class="pin-dot" id="fp0"></div>
+      <div class="pin-dot" id="fp1"></div>
+      <div class="pin-dot" id="fp2"></div>
+      <div class="pin-dot" id="fp3"></div>
+      <div class="pin-dot" id="fp4"></div>
+      <div class="pin-dot" id="fp5"></div>
+    </div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="confirmPinInput('1')">1</div>
+      <div class="pin-key" onclick="confirmPinInput('2')">2</div>
+      <div class="pin-key" onclick="confirmPinInput('3')">3</div>
+      <div class="pin-key" onclick="confirmPinInput('4')">4</div>
+      <div class="pin-key" onclick="confirmPinInput('5')">5</div>
+      <div class="pin-key" onclick="confirmPinInput('6')">6</div>
+      <div class="pin-key" onclick="confirmPinInput('7')">7</div>
+      <div class="pin-key" onclick="confirmPinInput('8')">8</div>
+      <div class="pin-key" onclick="confirmPinInput('9')">9</div>
+      <div class="pin-key empty"></div>
+      <div class="pin-key" onclick="confirmPinInput('0')">0</div>
+      <div class="pin-key delete" onclick="confirmPinDelete()">⌫</div>
+    </div>
+    <div class="msg-error" id="confirm-error"></div>
+    <button class="btn-ghost" onclick="resetCreatePin()">← Change PIN</button>
+  </div>
+
+  <!-- STEP: SAVING -->
+  <div class="step" id="step-saving">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div style="font-size:14px;color:var(--muted)">Setting up your dashboard...</div>
+    </div>
+  </div>
+
+  <!-- STEP: SUCCESS -->
+  <div class="step" id="step-success">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <div class="success-title">You're all set.</div>
+      <div class="success-sub">Your NetWize account is ready. Your PIN is fully private — we cannot see or reset it, so keep it safe.</div>
+      <button class="btn-gold" onclick="window.location.href='/dashboard'">Open My Dashboard →</button>
+    </div>
+    <p class="privacy-note">Save this for next time: netwize.live/dashboard · Log in with your email + PIN</p>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── CONFIG ──
+const SUPABASE_URL = 'https://ebkixbivzrrokmdlsxmm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVia2l4Yml2enJyb2ttZGxzeG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODU0NzQsImV4cCI6MjA4OTM2MTQ3NH0.uSamgJI2MeqZzgjBtFCJPqONKjlRq4J5fSSOOHPusaQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+emailjs.init('6VbbKlW1vXpj62zGX');
+
+const EMAILJS_SERVICE = 'service_0grs9ea';
+const EMAILJS_OTP_TEMPLATE = 'template_jxf0vpq';
+
+// ── STATE ──
+let setupToken = '';
+let clientData = null;
+let clientEmail = '';
+let clientPhone = '';
+let generatedOTP = '';
+let createPin = '';
+let confirmPin = '';
+const PIN_LEN = 6;
+
+// ── INIT ──
+window.addEventListener('load', async () => {
+  const params = new URLSearchParams(window.location.search);
+  setupToken = params.get('token') || '';
+  if (!setupToken) { showErr(); return; }
+  await verifyToken();
+});
+
+async function verifyToken() {
+  try {
+    const { data, error } = await sb.from('clients').select('*').eq('setup_token', setupToken).eq('is_active', false).single();
+    if (error || !data) { showErr(); return; }
+    clientData = data;
+    document.getElementById('welcome-first-name').textContent = data.name.split(' ')[0];
+    document.getElementById('welcome-tier').textContent = '✦ ' + (data.tier || 'Private') + ' Client';
+    goStep('step-welcome');
+    updateProgress(1);
+  } catch { showErr(); }
+}
+
+function showErr() { goStep('step-error'); document.getElementById('progressBar').style.display = 'none'; }
+
+// ── NAVIGATION ──
+function goStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateProgress(step) {
+  for (let i = 1; i <= 4; i++) {
+    const ps = document.getElementById('ps' + i);
+    const pl = document.getElementById('pl' + i);
+    if (i < step) { ps.className = 'progress-step done'; ps.textContent = '✓'; }
+    else if (i === step) { ps.className = 'progress-step active'; ps.textContent = i; }
+    else { ps.className = 'progress-step'; ps.textContent = i; }
+    if (pl) pl.className = i < step ? 'progress-line done' : 'progress-line';
+  }
+}
+
+// ── OTP ──
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendOTP() {
+  const email = document.getElementById('inp-email').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  const errEl = document.getElementById('details-error');
+  const infoEl = document.getElementById('details-info');
+
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email address.'; return; }
+  if (!phone) { errEl.textContent = 'Please enter your phone number.'; return; }
+  errEl.textContent = '';
+
+  clientEmail = email;
+  clientPhone = phone;
+  generatedOTP = generateOTP();
+
+  const btn = document.querySelector('#step-details .btn-gold');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  infoEl.style.display = 'block'; infoEl.textContent = 'Sending verification code...';
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_OTP_TEMPLATE, {
+      to_email: email,
+      name: clientData.name,
+      message: generatedOTP,
+      email: email
+    });
+
+    document.getElementById('otp-sub').textContent = 'We sent a 6-digit code to ' + email + '. Enter it below.';
+    goStep('step-otp');
+    updateProgress(2);
+    setTimeout(() => document.getElementById('otp0').focus(), 300);
+
+    // Start resend countdown
+    startResendTimer();
+  } catch(e) {
+    errEl.textContent = 'Failed to send code. Please try again.';
+    infoEl.style.display = 'none';
+  }
+
+  btn.disabled = false; btn.textContent = 'Send Verification Code →';
+  infoEl.style.display = 'none';
+}
+
+let resendTimer = null;
+function startResendTimer() {
+  const btn = document.getElementById('resend-btn');
+  let secs = 60;
+  btn.disabled = true;
+  btn.textContent = 'Resend code in ' + secs + 's';
+  resendTimer = setInterval(() => {
+    secs--;
+    if (secs <= 0) {
+      clearInterval(resendTimer);
+      btn.disabled = false;
+      btn.textContent = "Didn't receive it? Resend code";
+    } else {
+      btn.textContent = 'Resend code in ' + secs + 's';
+    }
+  }, 1000);
+}
+
+async function resendOTP() {
+  generatedOTP = generateOTP();
+  document.getElementById('otp-error').textContent = '';
+  for (let i = 0; i < 6; i++) { const el = document.getElementById('otp'+i); el.value = ''; el.classList.remove('error', 'filled'); }
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_OTP_TEMPLATE, {
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_OTP_TEMPLATE, {
+      to_email: clientEmail,
+      name: clientData.name,
+      message: generatedOTP,
+      email: clientEmail
+    });
+    document.getElementById('otp-info').textContent = 'New code sent!';
+    setTimeout(() => { document.getElementById('otp-info').style.display = 'none'; }, 3000);
+    startResendTimer();
+    document.getElementById('otp0').focus();
+  } catch { document.getElementById('otp-error').textContent = 'Failed to resend. Please try again.'; }
+}
+
+// ── OTP INPUT ──
+function otpInput(idx) {
+  const el = document.getElementById('otp' + idx);
+  el.value = el.value.replace(/[^0-9]/g, '').slice(-1);
+  el.classList.toggle('filled', el.value !== '');
+  el.classList.remove('error');
+  if (el.value && idx < 5) document.getElementById('otp' + (idx+1)).focus();
+  if (idx === 5 && el.value) setTimeout(verifyOTP, 200);
+}
+
+function otpKey(e, idx) {
+  if (e.key === 'Backspace' && !document.getElementById('otp'+idx).value && idx > 0) {
+    document.getElementById('otp' + (idx-1)).focus();
+  }
+}
+
+function verifyOTP() {
+  const entered = Array.from({length:6}, (_,i) => document.getElementById('otp'+i).value).join('');
+  if (entered.length < 6) return;
+
+  if (entered === generatedOTP) {
+    // Correct
+    for (let i = 0; i < 6; i++) document.getElementById('otp'+i).classList.add('filled');
+    setTimeout(() => {
+      goStep('step-pin');
+      updateProgress(3);
+    }, 400);
+  } else {
+    // Wrong
+    for (let i = 0; i < 6; i++) {
+      document.getElementById('otp'+i).classList.add('error');
+      document.getElementById('otp'+i).classList.remove('filled');
+    }
+    document.getElementById('otp-error').textContent = 'Incorrect code. Please try again.';
+    setTimeout(() => {
+      for (let i = 0; i < 6; i++) { const el = document.getElementById('otp'+i); el.value = ''; el.classList.remove('error'); }
+      document.getElementById('otp0').focus();
+    }, 1000);
+  }
+}
+
+// ── CREATE PIN ──
+function createPinInput(d) {
+  if (createPin.length >= PIN_LEN) return;
+  createPin += d;
+  updateCreateDots();
+  if (createPin.length === PIN_LEN) setTimeout(() => { goStep('step-confirm'); updateProgress(4); }, 200);
+}
+function createPinDelete() { createPin = createPin.slice(0,-1); updateCreateDots(); }
+function updateCreateDots() {
+  for (let i = 0; i < PIN_LEN; i++) {
+    const d = document.getElementById('cp' + i);
+    d.classList.toggle('filled', i < createPin.length);
+    d.classList.remove('error');
+  }
+}
+function resetCreatePin() { createPin = ''; updateCreateDots(); goStep('step-pin'); updateProgress(3); }
+
+// ── CONFIRM PIN ──
+function confirmPinInput(d) {
+  if (confirmPin.length >= PIN_LEN) return;
+  confirmPin += d;
+  updateConfirmDots();
+  if (confirmPin.length === PIN_LEN) setTimeout(checkPins, 200);
+}
+function confirmPinDelete() { confirmPin = confirmPin.slice(0,-1); updateConfirmDots(); document.getElementById('confirm-error').textContent = ''; }
+function updateConfirmDots() {
+  for (let i = 0; i < PIN_LEN; i++) {
+    const d = document.getElementById('fp' + i);
+    d.classList.toggle('filled', i < confirmPin.length);
+    d.classList.remove('error');
+  }
+}
+
+async function checkPins() {
+  if (createPin !== confirmPin) {
+    for (let i = 0; i < PIN_LEN; i++) document.getElementById('fp' + i).classList.add('error');
+    document.getElementById('confirm-error').textContent = 'PINs do not match. Please try again.';
+    setTimeout(() => { confirmPin = ''; updateConfirmDots(); }, 1000);
+    return;
+  }
+  // Save everything
+  goStep('step-saving');
+  try {
+    const hashed = await hashPin(createPin, setupToken);
+    const { error } = await sb.from('clients').update({
+      pin_hash: hashed,
+      is_active: true,
+      setup_token: 'USED_' + setupToken,
+      email: clientEmail,
+      phone: clientPhone
+    }).eq('setup_token', setupToken);
+    if (error) throw error;
+    goStep('step-success');
+  } catch(e) {
+    goStep('step-confirm');
+    document.getElementById('confirm-error').textContent = 'Error saving. Please try again or contact private@netwize.live';
+  }
+}
+
+async function hashPin(pin, token) {
+  const encoder =
