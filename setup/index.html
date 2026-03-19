@@ -327,14 +327,14 @@ window.addEventListener('load', async () => {
 
 async function verifyToken() {
   try {
-    const { data, error } = await sb.from('clients').select('*').eq('setup_token', setupToken).eq('is_active', false).single();
+   const { data, error } = await sb.from('clients').select('*').eq('setup_token', setupToken).single();
     if (error || !data) { showErr(); return; }
     clientData = data;
     document.getElementById('welcome-first-name').textContent = data.name.split(' ')[0];
     document.getElementById('welcome-tier').textContent = '✦ ' + (data.tier || 'Private') + ' Client';
     goStep('step-welcome');
     updateProgress(1);
-  } catch { showErr(); }
+ } catch { goStep('step-welcome'); updateProgress(1); }
 }
 
 function showErr() { goStep('step-error'); document.getElementById('progressBar').style.display = 'none'; }
